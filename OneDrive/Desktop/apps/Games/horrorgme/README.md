@@ -1,64 +1,99 @@
-# Oakhaven's Point — Unity 6 Project
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:6a11cb,100:2575fc&height=140&section=header&text=Oakhaven's%20Point&fontColor=ffffff&fontSize=36&animation=fadeIn" alt="Header" />
+</p>
 
-[![Unity Version](https://img.shields.io/badge/Unity-6000.2.6f1-blue.svg)](https://unity.com/releases/editor/whats-new/6000.2)
-[![Platforms](https://img.shields.io/badge/Platforms-Windows%20%7C%20Android-lightgrey.svg)](https://unity.com)
+<div align="center">
 
-A Unity 6 project for an atmospheric horror narrative prototype. The repo includes a simple interactive scene, an editor build utility, and a curated set of assets and documentation to help you build and distribute.
+[![Unity](https://img.shields.io/badge/Unity-6000.2.6f1-000000?logo=unity&logoColor=white)](https://unity.com/releases/editor/whats-new/6000.2)
+[![Platforms](https://img.shields.io/badge/Platforms-Windows%20%7C%20Android-444)](https://unity.com)
+[![CI](https://github.com/Snapwave333/OakhavensPoint/actions/workflows/unity-ci.yml/badge.svg)](https://github.com/Snapwave333/OakhavensPoint/actions)
+[![License](https://img.shields.io/badge/License-Proprietary-red)](#license)
 
-## Quick start
+</div>
 
-### Requirements
-- Unity 6 Editor: 6000.2.6f1 (ProjectVersion.txt)
-- Windows 10/11 or macOS for editing
-- Optional: Python 3.10+ and Node 18+ for asset tooling
+<div align="center">
 
-### Open and run
-1. Open the folder in Unity Hub and use Editor 6000.2.6f1.
-2. Open `Assets/Scenes/Game.unity`.
-3. Press Play to run the prototype.
+Atmospheric horror narrative built with Unity 6. Fast iteration developer overlay, save/checkpoint system, addressables-ready runtime, and batteries‑included dev tooling.
 
-### Build
-- Manual: File > Build Settings… > Standalone Windows 64 > Build.
-- Editor menu utility: Tools > Build > Create Scene and Build
-  - Runs `Assets/Editor/SimpleBuildScript.cs`, creates a minimal UI scene if needed and outputs to `Builds/Windows/HorrorGame.exe`.
+</div>
 
-## Project layout
+<br/>
+
+## ✨ Highlights
+- Toggleable developer overlay and in‑game console (tilde) with attribute‑based commands
+- JSON save/checkpoint system with migration, defaults, and pause save/load stub
+- Addressables loader with StreamingAssets fallback and editor catalog build helper
+- Editor tools: asset generators, crash/log uploader, screenshot tool, CI-ready tests
+
+## 📸 Glimpse
+<p align="center">
+  <img src="Assets/Images/oakhaven_landscape.png" alt="Oakhaven Landscape" width="640"/>
+</p>
+
+## 🚀 Quick start
+1. Install Unity 6 (Editor 6000.2.6f1)
+2. Open the project with Unity Hub
+3. Open `Assets/Scenes/Game.unity`
+4. Press Play
+
+## 🔧 Build
+- Manual: `File > Build Settings… > Standalone Windows 64 > Build`
+- One‑click: `Tools > Build > Create Scene and Build` (outputs `Builds/Windows/HorrorGame.exe`)
+
+## 🧰 Developer tools
+- Dev Overlay/Console: press `~` (see `Documentation/HowToUseDebugOverlay.md`)
+- Asset Generators: `Tools > Assets > Asset Generator` (Python/Node)
+- Crash/Log Uploader: opt‑in; run mock server `python tools/log_uploader_mock_server.py`
+- Screenshots: press `F12` (saved under `Documentation/media/screenshots/`)
+- Settings Menu: press `F9` (volume, subtitles, graphics presets)
+
+## 🧱 Tech stack
+<p>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unity/unity-original.svg" width="40" title="Unity"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" width="40" title="C#"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" width="40" title="Python"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="40" title="Node.js"/>
+</p>
+
+## 🗂️ Structure
 ```
 Assets/
+├─ Scenes/Game.unity
 ├─ Scripts/
-│  └─ SimpleGame.cs               # Minimal interactive narrative flow
-├─ Editor/
-│  └─ SimpleBuildScript.cs        # One-click build utility
-├─ Scenes/
-│  └─ Game.unity                  # Main scene
-├─ StreamingAssets/
-│  └─ HorrorGame/...              # Packaged runtime assets
-Documentation/
-├─ Build-Instructions.md
-├─ Architecture-Overview.md
-├─ API-Reference.md
-└─ User-Guide.md
-Builds/
-└─ Windows/…                      # Generated build artifacts
+│  ├─ Dev/…          # Overlay, console, screenshots
+│  ├─ Save/…         # SaveManager, SaveData, defaults
+│  ├─ Addressables/… # Loader (with fallback)
+│  ├─ Interactions/… # IInteractable + base
+│  ├─ Choice/…       # ChoiceManager
+│  ├─ UI/…           # Settings
+│  └─ Telemetry/…    # Logs, analytics
+├─ Editor/…          # Build helpers, generators, addressables
+└─ StreamingAssets/… # Runtime packs
+Documentation/…      # How‑tos, CI, media, etc.
 ```
 
-## Tooling (optional)
-- Python utilities: `generate_assets.py`, `generate_audio.py`, `generate_meshes.py`.
-- Node tooling: `generate_assets.js` (see `package.json`).
-- Use these to regenerate or batch-process assets as described in the docs.
+## 📚 Documentation
+- Debug overlay: `Documentation/HowToUseDebugOverlay.md`
+- Save system: `Documentation/SaveSystem.md`
+- Addressables: `Documentation/Addressables-Migration.md`
+- Asset generators: `Documentation/AssetGenerator.md`
+- Crash reporting: `Documentation/CrashReporting.md`
+- Interactions: `Documentation/Interactions.md`
+- Accessibility/UX: `Documentation/Accessibility.md`
+- Media capture: `Documentation/Media.md`
+- CI: `Documentation/CI.md`
+- Contributors quickstart: `Documentation/Contributors-Quickstart.md`
 
-## Supported platforms
-- Windows (primary). Android is optional via standard Unity platform switch.
+## 🙌 Contributing
+PRs welcome. Please keep changes minimal and backwards‑compatible; add tests and docs for new public APIs. See `Documentation/Contributors-Quickstart.md`.
 
-## Documentation
-- See `Documentation/Build-Instructions.md` for detailed build steps and CI pointers.
-- See `Documentation/Architecture-Overview.md` and `TECHNICAL_ARCHITECTURE_OVERVIEW.md` for system design notes.
-- See `Documentation/User-Guide.md` for gameplay and UX details.
+## 📝 License
+Proprietary — all rights reserved.
 
-## License
-Proprietary. All rights reserved.
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:2575fc,100:6a11cb&height=100&section=footer&animation=fadeIn" alt="Footer" />
+</p>
 
-## Credits / Contact
-- Project name: Oakhaven's Point
-- Unity version: 6000.2.6f1
-- For support, consult the docs above or the build logs in `BuildLogs/`.
+---
+
+Inspiration: Profile‑style README layout and visuals adapted from design ideas in “How to Design an Attractive GitHub Profile Readme…” by Piyush Malhotra. See the article for styling concepts and resources: [medium.com/design-bootcamp/how-to-design-an-attractive-github-profile-readme-3618d6c53783](https://medium.com/design-bootcamp/how-to-design-an-attractive-github-profile-readme-3618d6c53783)
