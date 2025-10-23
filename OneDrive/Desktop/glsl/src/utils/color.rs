@@ -7,6 +7,7 @@
 ///
 /// # Returns
 /// RGB tuple (r, g, b) with values 0-255
+#[allow(dead_code)]
 pub fn hue_to_pastel_rgb(hue: f32) -> (u8, u8, u8) {
   let hue_normalized = (hue / std::f32::consts::TAU) % 1.0;
   let h = hue_normalized * 6.0;
@@ -55,6 +56,7 @@ pub fn calculate_brightness(r: u8, g: u8, b: u8) -> u8 {
 ///
 /// # Returns
 /// Result with tuple (r, g, b) with values 0.0-1.0, or error if parsing fails
+#[allow(dead_code)]
 pub fn parse_hex_color(hex: &str) -> Result<(f32, f32, f32), String> {
   let hex = hex.trim_start_matches('#');
 

@@ -42,12 +42,31 @@ fn compute_pattern(uv: vec2<f32>, time: f32, pattern_type: u32) -> vec2<f32> {
     }
 }
 
+fn apply_camera_transform(position: vec2<f32>) -> vec2<f32> {
+    // Pan
+    var p = position + vec2<f32>(uniforms.camera_pan_x, uniforms.camera_pan_y);
+    // Rotate around center
+    let center = vec2<f32>(0.5, 0.5);
+    p = p - center;
+    let a = uniforms.camera_rotation;
+    let c = cos(a);
+    let s = sin(a);
+    let r = vec2<f32>(c * p.x - s * p.y, s * p.x + c * p.y);
+    // Zoom (camera_zoom > 1.0 zooms in)
+    let z = max(uniforms.camera_zoom, 0.001);
+    p = r / z + center;
+    return p;
+}
+
 fn plasma_effect(position: vec2<f32>, time: f32) -> vec3<f32> {
     // Apply beat zoom first
     var processed_position = apply_beat_zoom(position, time);
     
     // Then apply beat-reactive distortion to position for visual pop effect
     processed_position = apply_beat_distortion(processed_position, time);
+    
+    // Apply camera transforms (pan, rotation, zoom)
+    processed_position = apply_camera_transform(processed_position);
     
     let uv = processed_position * uniforms.scale;
     
@@ -73,6 +92,9 @@ fn plasma_effect(position: vec2<f32>, time: f32) -> vec3<f32> {
         );
         color = mix(uniforms.background_tint, color, vignette_amount);
     }
+    
+    // Clamp final color to avoid negative/overbright flicker
+    color = clamp(color, vec3<f32>(0.0), vec3<f32>(1.0));
     
     return color;
 }

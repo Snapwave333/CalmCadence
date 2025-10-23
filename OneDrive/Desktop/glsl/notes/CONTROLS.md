@@ -26,6 +26,23 @@ Save the current configuration to a file in the working directory.
 - Config files can be loaded with `--config` flag on startup
 - Share configs with others or keep your favorite settings!
 
+## Beat & Effects
+
+### `B` - Trigger Beat 🥁
+
+Start the beat-reactive shader effects (zoom pulse, ripple distortion, flash).
+
+- Immediately sets `beat_distortion_time` to the current time
+- Uses current `beat_distortion_strength` and ensures a minimum `beat_zoom_strength`
+- Helpful when running without audio input (manual beat)
+
+### `N` - Next Effect
+
+Cycle through effect types and start the effect expansion.
+
+- Sets `effect_time` to the current time
+- Skips types 0 and 1 for better visuals by default
+
 ## Parameter Adjustments
 
 ### Frequency (Wave Density)

@@ -36,6 +36,12 @@ pub struct ShaderParams {
   pub vignette_softness: f32,
   pub glyph_sharpness: f32,
 
+  // Camera uniforms
+  pub camera_zoom: f32,
+  pub camera_pan_x: f32,
+  pub camera_pan_y: f32,
+  pub camera_rotation: f32,
+
   pub background_tint_r: f32,
   pub background_tint_g: f32,
   pub background_tint_b: f32,
@@ -89,6 +95,12 @@ impl Default for ShaderParams {
       vignette: 0.3,
       vignette_softness: 0.5,
       glyph_sharpness: 1.0,
+
+      // Camera defaults
+      camera_zoom: 1.0,
+      camera_pan_x: 0.0,
+      camera_pan_y: 0.0,
+      camera_rotation: 0.0,
 
       background_tint_r: 0.0,
       background_tint_g: 0.0,
@@ -182,6 +194,18 @@ impl ShaderParams {
     self.vignette_softness = self.vignette_softness.clamp(0.0, 1.0);
     self.glyph_sharpness = self.glyph_sharpness.clamp(0.5, 2.0);
 
+    // Clamp camera
+    self.camera_zoom = self.camera_zoom.clamp(0.1, 5.0);
+    self.camera_pan_x = self.camera_pan_x.clamp(-0.5, 0.5);
+    self.camera_pan_y = self.camera_pan_y.clamp(-0.5, 0.5);
+    // Rotation in radians, wrap to [-PI, PI]
+    if self.camera_rotation > std::f32::consts::PI {
+      self.camera_rotation -= 2.0 * std::f32::consts::PI;
+    }
+    if self.camera_rotation < -std::f32::consts::PI {
+      self.camera_rotation += 2.0 * std::f32::consts::PI;
+    }
+
     self.background_tint_r = self.background_tint_r.clamp(0.0, 1.0);
     self.background_tint_g = self.background_tint_g.clamp(0.0, 1.0);
     self.background_tint_b = self.background_tint_b.clamp(0.0, 1.0);
@@ -258,41 +282,29 @@ impl ShaderParams {
     self.amplitude = rng.gen_range(0.5..=2.0);
     self.speed = rng.gen_range(0.1..=1.0);
     self.scale = rng.gen_range(0.5..=3.0);
+    // Randomize color shift and octaves as before
     self.color_shift = rng.gen_range(0.0..=std::f32::consts::TAU);
     self.octaves = rng.gen_range(2..=6);
+    // Camera randomization within safe ranges
+    self.camera_zoom = rng.gen_range(0.6..=1.8);
+    self.camera_pan_x = rng.gen_range(-0.1..=0.1);
+    self.camera_pan_y = rng.gen_range(-0.1..=0.1);
+    self.camera_rotation = rng.gen_range(-0.3..=0.3);
 
-    self.noise_strength = rng.gen_range(0.0..=0.3);
-    self.distort_amplitude = rng.gen_range(0.0..=1.5);
-    self.noise_scale = rng.gen_range(0.001..=0.008);
-    self.z_rate = rng.gen_range(0.01..=0.05);
+    self.noise_strength = rng.gen_range(0.0..=0.5);
+    self.distort_amplitude = rng.gen_range(0.0..=2.0);
+    self.noise_scale = rng.gen_range(0.0..=0.01);
+    self.z_rate = rng.gen_range(0.0..=0.1);
 
-    self.brightness = rng.gen_range(0.8..=1.8);
-    self.contrast = rng.gen_range(0.5..=1.8);
-    self.saturation = rng.gen_range(0.6..=1.5);
-    self.gamma = rng.gen_range(0.8..=1.3);
+    self.brightness = rng.gen_range(0.6..=1.6);
+    self.contrast = rng.gen_range(0.8..=1.4);
+    self.hue = rng.gen_range(0.0..=360.0);
+    self.saturation = rng.gen_range(0.6..=1.6);
+    self.gamma = rng.gen_range(0.8..=1.2);
 
-    self.vignette = if rng.gen_bool(0.3) {
-      rng.gen_range(0.1..=0.5)
-    } else {
-      0.0
-    };
-
+    self.vignette = rng.gen_range(0.0..=0.5);
     self.vignette_softness = rng.gen_range(0.3..=0.8);
-    self.glyph_sharpness = rng.gen_range(0.7..=1.5);
-
-    if rng.gen_bool(0.2) {
-      self.background_tint_r = rng.gen_range(0.0..=0.3);
-      self.background_tint_g = rng.gen_range(0.0..=0.3);
-      self.background_tint_b = rng.gen_range(0.0..=0.3);
-    } else {
-      self.background_tint_r = 0.0;
-      self.background_tint_g = 0.0;
-      self.background_tint_b = 0.0;
-    }
-
-    self.bass_influence = rng.gen_range(0.3..=0.8);
-    self.mid_influence = rng.gen_range(0.2..=0.6);
-    self.treble_influence = rng.gen_range(0.1..=0.5);
+    self.glyph_sharpness = rng.gen_range(0.8..=1.4);
   }
 
   fn compute_hash(&self) -> String {

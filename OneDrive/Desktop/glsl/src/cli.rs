@@ -1,7 +1,7 @@
 use clap::Parser;
 
 /// Command-line arguments
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 #[command(name = "chroma")]
 #[command(
   about = "GPU-accelerated terminal shader visualizer with audio reactivity",
@@ -37,16 +37,24 @@ pub struct CliArgs {
   pub list_palettes: bool,
 
   /// Disable status bar (shader fills entire terminal)
-  #[arg(long)]
+  #[arg(long, alias = "no-hud", alias = "hud-disabled")]
   pub no_status: bool,
+
+  /// HUD style: SegmentedNeon (default) or Odometer
+  #[arg(long, value_name = "STYLE", default_value = "SegmentedNeon")]
+  pub hud_style: String,
 
   /// Limit frame rate to specified FPS (e.g., --fps 30). Useful for saving CPU/GPU resources
   #[arg(long, value_name = "FPS")]
   pub fps: Option<u32>,
 
-  /// Prompt for confirmation before exiting (prevents accidental closure)
+  /// Enable autonomous VJ mode (default behavior)
   #[arg(long)]
-  pub exit_confirmation: bool,
+  pub autonomous: bool,
+
+  /// Disable autonomous mode and use manual controls
+  #[arg(long)]
+  pub manual: bool,
 
   /// Start with randomized parameters (lowest priority, overridden by config and args)
   #[arg(short = 'r', long)]
@@ -149,4 +157,8 @@ pub struct CliArgs {
   /// Load a custom WGSL shader file (overrides --pattern and config pattern settings)
   #[arg(long, value_name = "FILE")]
   pub custom_shader: Option<String>,
+
+  /// Override the starting visual pattern in autonomous mode only (e.g., --start-pattern "vortex"). After startup, the autonomous engine takes over.
+  #[arg(long, value_name = "PATTERN")]
+  pub start_pattern: Option<String>,
 }

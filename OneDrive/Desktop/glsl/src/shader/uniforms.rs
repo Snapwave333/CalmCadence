@@ -31,6 +31,12 @@ pub struct ShaderUniforms {
   pub vignette_softness: f32,
   pub glyph_sharpness: f32,
 
+  // Camera uniforms
+  pub camera_zoom: f32,
+  pub camera_pan_x: f32,
+  pub camera_pan_y: f32,
+  pub camera_rotation: f32,
+
   pub color_mode: u32,
   pub pattern_type: u32,
   pub effect_time: f32,
@@ -39,7 +45,7 @@ pub struct ShaderUniforms {
   pub beat_distortion_time: f32,
   pub beat_distortion_strength: f32,
   pub beat_zoom_strength: f32,
-  _padding2: [u32; 3], // Need 12 bytes padding to align vec3 to 16-byte boundary
+  _padding2: [u32; 3], // padding to align vec3 to 16-byte boundary
   pub background_tint: [f32; 3],
   _padding3: u32,
 }
@@ -75,6 +81,12 @@ impl ShaderUniforms {
       vignette: params.vignette,
       vignette_softness: params.vignette_softness,
       glyph_sharpness: params.glyph_sharpness,
+
+      // Camera uniforms
+      camera_zoom: params.camera_zoom,
+      camera_pan_x: params.camera_pan_x,
+      camera_pan_y: params.camera_pan_y,
+      camera_rotation: params.camera_rotation,
 
       color_mode: params.color_mode.to_u32(),
       pattern_type: params.pattern_type.to_u32(),

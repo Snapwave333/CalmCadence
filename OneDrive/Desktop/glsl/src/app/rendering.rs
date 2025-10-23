@@ -113,7 +113,7 @@ fn build_frame_buffer(
 fn render_row(
   row: &[(char, Color)],
   buffer: &mut String,
-  terminal_bg_color: Option<(u8, u8, u8)>,
+  _terminal_bg_color: Option<(u8, u8, u8)>,
   expected_cols: usize,
   _row_idx: usize,
   debug_log: &mut DebugLog,

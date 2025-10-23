@@ -4,6 +4,7 @@ use chroma::params::ShaderParams;
 use unicode_width::UnicodeWidthChar;
 
 /// Build status bar text with current parameters
+#[allow(dead_code)]
 pub fn build_status_text(params: &ShaderParams, effect_type: u32) -> String {
   let effect_name = EFFECT_NAMES[effect_type as usize % 7];
   let pattern_initial = params.pattern_type.name().chars().next().unwrap_or('?');
@@ -17,6 +18,7 @@ pub fn build_status_text(params: &ShaderParams, effect_type: u32) -> String {
 }
 
 /// Format status bar with optional audio gradient
+#[allow(dead_code)]
 pub fn format_status_bar(
   status_text: String,
   available_cols: usize,
@@ -41,6 +43,7 @@ pub fn format_status_bar(
 }
 
 /// Truncate status text to fit available columns
+#[allow(dead_code)]
 fn truncate_status(status: String, available_cols: usize) -> String {
   let target_len = available_cols.saturating_sub(3);
   let mut current_width = 0;
@@ -61,6 +64,7 @@ fn truncate_status(status: String, available_cols: usize) -> String {
 }
 
 /// Apply animated gradient to status bar when audio is active
+#[allow(dead_code)]
 fn apply_audio_gradient(status: String, time: f32) -> String {
   let gradient_offset = (time * 2.0) % std::f32::consts::TAU;
   let mut formatted_status = String::new();

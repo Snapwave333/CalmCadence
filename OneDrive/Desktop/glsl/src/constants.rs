@@ -30,6 +30,7 @@ pub const AUDIO_SPEED_DECAY_RATE: f32 = 0.88;
 pub const NUM_EFFECT_TYPES: u32 = 7;
 
 /// Effect names for status bar display
+#[allow(dead_code)]
 pub const EFFECT_NAMES: [&str; 7] = [
   "Circle", "Cross", "Diamond", "Star", "Grid", "Wave", "Octgrams",
 ];

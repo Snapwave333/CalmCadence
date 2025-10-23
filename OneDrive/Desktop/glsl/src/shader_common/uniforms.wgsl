@@ -21,6 +21,11 @@ struct Uniforms {
     vignette: f32,
     vignette_softness: f32,
     glyph_sharpness: f32,
+    // Camera uniforms
+    camera_zoom: f32,
+    camera_pan_x: f32,
+    camera_pan_y: f32,
+    camera_rotation: f32,
     color_mode: u32,
     pattern_type: u32,
     effect_time: f32,

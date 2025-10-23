@@ -8,6 +8,7 @@ pub struct ShaderPipeline {
   queue: wgpu::Queue,
   compute_pipeline: wgpu::ComputePipeline,
   bind_group: wgpu::BindGroup,
+  bind_group_layout: wgpu::BindGroupLayout,
   uniform_buffer: wgpu::Buffer,
   output_buffer: wgpu::Buffer,
   staging_buffer: wgpu::Buffer,
@@ -154,6 +155,7 @@ impl ShaderPipeline {
       queue,
       compute_pipeline,
       bind_group,
+      bind_group_layout,
       uniform_buffer,
       output_buffer,
       staging_buffer,
@@ -232,5 +234,32 @@ impl ShaderPipeline {
 
   pub fn height(&self) -> u32 {
     self.height
+  }
+
+  pub fn swap_compute_pipeline_from_wgsl<W: Write>(&mut self, wgsl: &str, debug_log: &mut W) -> Result<()> {
+    writeln!(debug_log, "DEBUG: Swapping compute pipeline from WGSL ({} bytes)", wgsl.len())?;
+    let shader_module = self.device.create_shader_module(wgpu::ShaderModuleDescriptor {
+      label: Some("Runtime Shader Module"),
+      source: wgpu::ShaderSource::Wgsl(wgsl.into()),
+    });
+
+    let pipeline_layout = self.device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+      label: Some("Pipeline Layout"),
+      bind_group_layouts: &[&self.bind_group_layout],
+      push_constant_ranges: &[],
+    });
+
+    let compute_pipeline = self.device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {
+      label: Some("Runtime Compute Pipeline"),
+      layout: Some(&pipeline_layout),
+      module: &shader_module,
+      entry_point: "main",
+      compilation_options: Default::default(),
+      cache: None,
+    });
+
+    self.compute_pipeline = compute_pipeline;
+    writeln!(debug_log, "DEBUG: Compute pipeline swapped successfully")?;
+    Ok(())
   }
 }

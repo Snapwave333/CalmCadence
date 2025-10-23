@@ -3,6 +3,15 @@ mod config_watcher;
 mod input;
 mod rendering;
 mod status_bar;
+mod vj_integration;
+mod autonomous_app;
+mod chroma_app;
+mod futuristic_status_bar;
+mod startup;
+mod styling_constants;
+
+pub use autonomous_app::AutonomousApp;
+pub use chroma_app::ChromaApp;
 
 #[cfg(feature = "audio")]
 use crate::constants::AUDIO_SAMPLE_THRESHOLD;
@@ -17,6 +26,7 @@ use crossterm::terminal;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::time::Instant;
+use sysinfo::{System, SystemExt};
 
 #[cfg(debug_assertions)]
 pub(crate) type DebugLog = BufWriter<File>;
@@ -42,6 +52,12 @@ pub struct App {
   audio_capture: Option<AudioCapture>,
   #[cfg(feature = "audio")]
   audio_analyzer: Option<AudioAnalyzer>,
+  // Futuristic status bar and metrics helpers
+  futuristic_status_bar: futuristic_status_bar::FuturisticStatusBar,
+  fps_smooth: f32,
+  system: System,
+  #[cfg(feature = "audio")]
+  last_beat_strength: f32,
 }
 
 impl App {
@@ -49,6 +65,7 @@ impl App {
   pub async fn new(
     loaded_config: Option<ShaderParams>,
     show_status_bar: bool,
+    hud_style: String,
     config_path: Option<String>,
     #[cfg(feature = "audio")] audio_device: Option<String>,
     custom_shader: Option<String>,
@@ -123,6 +140,17 @@ impl App {
 
     let config_watcher = Self::init_config_watcher(&config_path, &mut debug_log)?;
 
+    // Initialize system info and futuristic status bar
+    let mut system = System::new_all();
+    system.refresh_memory();
+
+    let hud_style_enum = match hud_style.to_lowercase().as_str() {
+      "segmentedneon" | "segmented_neon" | "neon" => futuristic_status_bar::HudStyle::SegmentedNeon,
+      "odometer" => futuristic_status_bar::HudStyle::Odometer,
+      _ => futuristic_status_bar::HudStyle::SegmentedNeon,
+    };
+    let futuristic_status_bar = futuristic_status_bar::FuturisticStatusBar::new_with_style(hud_style_enum, show_status_bar);
+
     Ok(Self {
       params,
       pipeline,
@@ -140,6 +168,11 @@ impl App {
       audio_capture,
       #[cfg(feature = "audio")]
       audio_analyzer,
+      futuristic_status_bar,
+      fps_smooth: 0.0,
+      system,
+      #[cfg(feature = "audio")]
+      last_beat_strength: 0.0,
     })
   }
 
@@ -209,29 +242,6 @@ impl App {
     }
   }
 
-  /// Update application state
-  fn update(&mut self) {
-    let current_time = Instant::now();
-    let delta_time = current_time
-      .duration_since(self.last_frame_time)
-      .as_secs_f32();
-
-    self.params.update_time(delta_time);
-
-    #[cfg(feature = "audio")]
-    audio::update_audio_reactive(
-      &mut self.params,
-      &self.audio_capture,
-      &mut self.audio_analyzer,
-      delta_time,
-      &mut self.debug_log,
-    );
-
-    self.check_and_apply_config_reload();
-
-    self.last_frame_time = current_time;
-  }
-
   /// Check for config file changes and apply them if valid
   fn check_and_apply_config_reload(&mut self) {
     if let Some(ref watcher) = self.config_watcher {
@@ -253,6 +263,32 @@ impl App {
         let _ = writeln!(self.debug_log, "Config reloaded successfully");
       }
     }
+  }
+
+  /// Update application state
+  fn update(&mut self) {
+    let current_time = Instant::now();
+    let delta_time = current_time
+      .duration_since(self.last_frame_time)
+      .as_secs_f32();
+
+    self.params.update_time(delta_time);
+
+    #[cfg(feature = "audio")]
+    {
+      let beat_opt = audio::update_audio_reactive(
+        &mut self.params,
+        &self.audio_capture,
+        &mut self.audio_analyzer,
+        delta_time,
+        &mut self.debug_log,
+      );
+      if let Some(bs) = beat_opt { self.last_beat_strength = bs; }
+    }
+
+    self.check_and_apply_config_reload();
+
+    self.last_frame_time = current_time;
   }
 
   /// Render current frame
@@ -320,12 +356,12 @@ impl App {
   }
 
   /// Build status bar string
-  fn build_status_bar(&self, has_sound: bool) -> String {
-    let (current_width, _) = terminal::size().unwrap_or((80, 24));
-    let available_cols = current_width as usize;
-    let status_text = status_bar::build_status_text(&self.params, self.params.effect_type);
-
-    status_bar::format_status_bar(status_text, available_cols, has_sound, self.params.time)
+  fn build_status_bar(&mut self, _has_sound: bool) -> String {
+    let (_current_width, _) = terminal::size().unwrap_or((80, 24));
+    match self.futuristic_status_bar.render() {
+      Ok(s) => s,
+      Err(_) => String::new(),
+    }
   }
 
   /// Handle window resize
@@ -365,17 +401,22 @@ impl App {
   }
 
   /// Set the frame rate limit
-  pub fn set_frame_limiter(&mut self, fps_limit: Option<u32>) {
-    self.frame_limiter = fps_limit;
-  }
+  #[allow(dead_code)]
+   pub fn set_frame_limiter(&mut self, fps_limit: Option<u32>) {
+     self.frame_limiter = fps_limit;
+   }
 
-  /// Get the current frame rate limit
-  pub fn get_frame_limiter(&self) -> Option<u32> {
-    self.frame_limiter
-  }
+   /// Get the current frame rate limit
+  #[allow(dead_code)]
+   pub fn get_frame_limiter(&self) -> Option<u32> {
+     self.frame_limiter
+   }
 
   /// Main application loop
   pub fn run(&mut self) -> Result<()> {
+    // Run the cinematic startup sequence before entering the main loop
+    // This ignores audio input and focuses purely on timed visual effects
+    if let Err(e) = startup::run_cinematic_startup() { eprintln!("Startup sequence error: {}", e); }
     while self.running {
       let frame_start = Instant::now();
 
@@ -401,13 +442,58 @@ impl App {
         &mut self.running,
         &mut self.debug_log,
         self.exit_confirmation,
+        &mut self.show_status_bar,
       )?;
 
+      // Keep futuristic bar visibility in sync with global toggle
+      // (Rendering path already checks self.show_status_bar)
+      // Update app state and render
       self.update();
+
+      // BPM synchronization from audio analyzer via beat_distortion_time
+      let beat_detected = (self.params.time - self.params.beat_distortion_time).abs() < 0.05;
+      if beat_detected {
+        self.futuristic_status_bar.update_beat(true);
+      }
+      #[cfg(feature = "audio")]
+      {
+        self.futuristic_status_bar.update_beat_strength(self.last_beat_strength);
+      }
+
       self.render()?;
 
       // Frame rate limiting
       let frame_time = frame_start.elapsed();
+
+      // Update metrics for futuristic status bar (decoupled rendering uses cached string)
+      let fps_current = if frame_time.as_secs_f32() > 0.0 { 1.0 / frame_time.as_secs_f32() } else { 0.0 };
+      self.fps_smooth = if self.fps_smooth == 0.0 {
+        fps_current
+      } else {
+        self.fps_smooth * 0.85 + fps_current * 0.15
+      };
+
+      // Prefer real GPU metrics if available; otherwise, simulate based on frame time relative to the configured FPS limit
+      let target_frame_duration = if let Some(limit) = self.frame_limiter { 1.0 / (limit as f32) } else { 1.0 / 60.0 };
+      let gpu_load = if let Some(real_gpu) = crate::system::gpu::try_get_gpu_load() {
+        real_gpu.clamp(0.0, 100.0)
+      } else {
+        let ratio = (frame_time.as_secs_f32() / target_frame_duration).max(0.0);
+        // Map ratio=1.0 (meeting target FPS) -> ~50% load, slower -> approach 100%
+        (50.0 + 50.0 * (ratio - 1.0).clamp(0.0, 1.0)).clamp(0.0, 100.0)
+      };
+
+      // VRAM usage (MiB) via system::gpu integrations if available
+      let (vram_used_mb, vram_total_mb) = if let Some((used_mb, total_mb)) = crate::system::gpu::try_get_vram_usage_mb() {
+        (used_mb, total_mb)
+      } else {
+        (0.0, 0.0)
+      };
+     
+       // BPM value is driven by beat sync inside the status bar; keep placeholder
+       let bpm = 0.0;
+
+      self.futuristic_status_bar.update_metrics(self.fps_smooth, gpu_load, vram_used_mb, vram_total_mb, bpm);
 
       if frame_time < FRAME_DURATION {
         std::thread::sleep(FRAME_DURATION - frame_time);

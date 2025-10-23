@@ -10,13 +10,21 @@ mod app;
 mod cli;
 mod constants;
 mod utils;
+mod system;
 
-use app::App;
+use app::{App, AutonomousApp, ChromaApp};
 use chroma::params::ShaderParams;
 use cli::CliArgs;
 
 fn main() -> Result<()> {
   let cli_args = CliArgs::parse();
+
+  // Determine if we should run in autonomous mode
+  let autonomous_mode = cli_args.autonomous || (!cli_args.manual && is_default_run(&cli_args));
+
+  if autonomous_mode {
+    return run_autonomous_vj(&cli_args);
+  }
 
   // Handle --list-audio-devices flag
   #[cfg(feature = "audio")]
@@ -42,6 +50,7 @@ fn main() -> Result<()> {
 
   let loaded_config = load_config_with_overrides(&cli_args)?;
   let show_status_bar = !cli_args.no_status;
+  let hud_style = cli_args.hud_style.clone();
   let config_path = cli_args.config.clone();
 
   // Load custom shader if provided
@@ -56,8 +65,9 @@ fn main() -> Result<()> {
     run_application(
       loaded_config,
       show_status_bar,
+      hud_style,
       config_path,
-      cli_args.audio_device,
+      cli_args.audio_device.clone(),
       custom_shader,
       &cli_args,
     )
@@ -65,7 +75,7 @@ fn main() -> Result<()> {
 
   #[cfg(not(feature = "audio"))]
   {
-    run_application(loaded_config, show_status_bar, config_path, custom_shader, &cli_args)
+    run_application(loaded_config, show_status_bar, hud_style, config_path, custom_shader, &cli_args)
   }
 }
 
@@ -301,6 +311,7 @@ fn load_custom_shader(shader_path: &str) -> Result<String> {
 fn run_application(
   loaded_config: Option<ShaderParams>,
   show_status_bar: bool,
+  hud_style: String,
   config_path: Option<String>,
   audio_device: Option<String>,
   custom_shader: Option<String>,
@@ -312,11 +323,12 @@ fn run_application(
     let mut app = App::new(
       loaded_config,
       show_status_bar,
+      hud_style,
       config_path,
       audio_device,
       custom_shader,
       cli_args.fps,
-      cli_args.exit_confirmation,
+      false, // exit_confirmation not available in CLI yet
     )
     .await?;
     app.run()
@@ -332,6 +344,7 @@ fn run_application(
 fn run_application(
   loaded_config: Option<ShaderParams>,
   show_status_bar: bool,
+  hud_style: String,
   config_path: Option<String>,
   custom_shader: Option<String>,
   cli_args: &CliArgs,
@@ -339,7 +352,7 @@ fn run_application(
   setup_terminal()?;
 
   let result = pollster::block_on(async {
-    let mut app = App::new(loaded_config, show_status_bar, config_path, custom_shader, cli_args.fps, cli_args.exit_confirmation).await?;
+    let mut app = App::new(loaded_config, show_status_bar, hud_style, config_path, custom_shader, cli_args.fps, false).await?;
     app.run()
   });
 
@@ -427,7 +440,49 @@ fn list_palettes() -> Result<()> {
 
   println!();
   println!("Use with: --palette <PALETTE>");
-  println!("In-app: Press 'P' to cycle through palettes");
-
   Ok(())
+}
+
+/// Check if this is a default run (no specific arguments that require manual mode)
+fn is_default_run(cli_args: &CliArgs) -> bool {
+  // If any of these are specified, it's not a default run
+  cli_args.pattern.is_some() ||
+  cli_args.color_mode.is_some() ||
+  cli_args.palette.is_some() ||
+  cli_args.frequency.is_some() ||
+  cli_args.amplitude.is_some() ||
+  cli_args.speed.is_some() ||
+  cli_args.scale.is_some() ||
+  cli_args.brightness.is_some() ||
+  cli_args.contrast.is_some() ||
+  cli_args.saturation.is_some() ||
+  cli_args.hue.is_some() ||
+  cli_args.noise_strength.is_some() ||
+  cli_args.distort_amplitude.is_some() ||
+  cli_args.vignette.is_some() ||
+  cli_args.background_color.is_some() ||
+  cli_args.custom_shader.is_some() ||
+  cli_args.config.is_some() ||
+  cli_args.random ||
+  cli_args.no_status
+}
+
+/// Run the unified Chroma experience - combines cinematic startup + orchestrator + audio reactivity
+fn run_autonomous_vj(cli_args: &CliArgs) -> Result<()> {
+  setup_terminal()?;
+
+  let result = pollster::block_on(async {
+    // Parse optional starting pattern for autonomous mode
+    let start_pattern = cli_args
+      .start_pattern
+      .as_ref()
+      .map(|s| parse_pattern_type(s));
+
+    // Create the unified Chroma experience
+    let mut chroma_app = ChromaApp::new(44100.0, start_pattern, cli_args).await?;
+    chroma_app.run()
+  });
+
+  cleanup_terminal()?;
+  result
 }

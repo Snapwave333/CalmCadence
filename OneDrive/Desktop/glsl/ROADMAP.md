@@ -1,151 +1,157 @@
-# Chroma Development Roadmap
+# Chroma Development Roadmap - Autonomous VJ Experience
 
-## Overview
+## Vision: Fully Autonomous Virtual VJ
 
-This roadmap outlines planned improvements and features for Chroma v0.2.0 and beyond. Features are categorized by type and priority to guide development phases.
+**Chroma** transforms from a manual shader tool into a **fully autonomous Virtual VJ** that creates dynamic, music-reactive visual experiences without any user intervention. The system intelligently analyzes audio input and automatically morphs between patterns, palettes, and effects to create a seamless, professional VJ performance.
+
+## Core Philosophy
+
+- **Zero Manual Control** - The VJ runs itself based purely on audio analysis
+- **Intelligent Transitions** - Smooth morphing between patterns and effects
+- **Music-Driven Creativity** - All visual decisions based on audio characteristics
+- **Professional Quality** - Production-ready autonomous performance system
 
 ## Development Phases
 
-### Phase 1: Performance & Stability (v0.1.1)
-**Priority: High** - Foundation improvements for better user experience
+### Phase 1: Autonomous VJ Core Logic (v0.2.0) 🎯 CURRENT PRIORITY
+**Goal**: Build the brain that makes creative decisions
 
-#### Optimization/Performance
-- **#1 Shader Caching** - Pre-compile common shaders to reduce startup latency
-- **#2 Dynamic Resolution Scaling** - Auto-adjust terminal cell size for better performance on high-res monitors  
-- **#3 WGPU Buffer Pipelining** - Optimize data transfer between CPU and GPU
-- **#12 Frame Limiter** - Option to cap FPS to save CPU/GPU resources (e.g., `--fps 30`)
+#### Macro-State Engine (MSE) - The VJ's Brain
+- **#1 Macro-State Engine** - High-level state machine dictating pattern/palette transitions based on audio analysis
+- **#2 Intelligent Auto-Randomization** - Smart parameter randomization based on detected music mood/energy
+- **#3 Cross-Pattern Morphing** - GPU-accelerated smooth transitions between different shaders
+- **#4 Tempo/BPM Detection & Sync** - Detect BPM and synchronize all transitions and animations
+- **#5 Pattern/Palette Blacklist** - Dynamic system preventing repetitive combinations
 
-#### Quality of Life
-- **#7 Terminal Resize Handling** - More graceful and instant re-calculation of render area on terminal resize events
-- **#25 Exit Confirmation** - Optional prompt when quitting (Q/Esc) to prevent accidental closure
+### Phase 2: Advanced Audio Analysis (v0.2.1)
+**Goal**: Give the VJ superhuman hearing
 
-### Phase 2: User Experience (v0.1.2)
-**Priority: High** - Core usability improvements
+#### Advanced Audio Processing
+- **#6 Advanced Beat Mapping** - Track Kick, Snare, Hi-Hat separately for granular reactions
+- **#7 Intelligent Frequency Band Mapping** - Auto-map Bass/Mid/Treble to optimal shader uniforms
+- **#8 Musical Energy/Mood Detection** - Analyze energy and mood to drive dramatic changes
+- **#9 Audio Noise Gate** - Ignore silence/low-level noise to prevent irrelevant reactions
+- **#10 Dynamic Peak Hold/Decay** - Audio-driven decay rates based on music tempo
+- **#11 Auto Audio Sensitivity** - Automatically normalize input levels across sources
+- **#12 Audio Meter Visualization** - Hidden debug TUI for optimization
+- **#13 Sub-Bass Focus** - Dedicated 20-60Hz analysis for deep pulsations
+- **#14 High-Frequency Focus** - Dedicated 8000+Hz analysis for fine details
+- **#15 Cross-Fading Audio Reactions** - Smooth transitions avoiding jarring visual jumps
 
-#### Quality of Life
-- **#4 Startup Config Picker** - An interactive TUI to select a saved config file at launch
-- **#5 Smooth Palette Cycling** - Implement a gradual fade/cross-dissolve between palette cycles
-- **#6 On-Screen Control Hints** - A small, toggleable HUD showing the current key controls
+### Phase 3: Visual & Rendering Excellence (v0.2.2)
+**Goal**: Create stunning, diverse visual output
 
-#### Features
-- **#8 Custom Keybinds** - Allow users to remap controls in the config file
-- **#11 Pause/Play Toggle** - A keybind (e.g., Spacebar) to freeze/unfreeze the animation
+#### Advanced Visual Features
+- **#16 Dynamic Gradient Generation** - MSE-generated multi-point color gradients
+- **#17 Braille ASCII Density** - High-resolution Braille character set for detail
+- **#18 Automated Shader Layering** - MSE-controlled blend modes between multiple shaders
+- **#19 Dynamic ASCII Density Curves** - Auto-adjust color-to-character mapping
+- **#20 Film Grain/CRT Color Mode** - Analogue texture for authentic VJ feel
+- **#21 Reaction-Diffusion Pattern** - Complex organic pattern for dramatic visuals
+- **#22 Flow Fields/Vector Fields** - Organized directional motion patterns
+- **#23 Auto-Recording** - Command-line option to capture "sets"
+- **#24 WGPU Buffer Pipelining** - Critical optimization for smooth performance
+- **#25 Shader Caching** - Pre-compile shaders for instant MSE transitions
 
-### Phase 3: Enhanced Features (v0.2.0)
-**Priority: Medium** - Feature expansion and customization
+### Phase 4: Production & Deployment (v0.2.3)
+**Goal**: Make it production-ready and easy to deploy
 
-#### Features
-- **#9 More Shader Uniforms** - Expose additional controllable parameters (e.g., color intensity, rotation axis) to shaders
-- **#10 Color Palette Editor (TUI)** - An in-app editor to define custom color schemes and save them
-
-#### Audio Enhancements
-- **#13 Peak Hold/Decay** - Adjust how quickly audio-reactive parameters return to baseline
-- **#14 Audio Sensitivity/Gain Control** - CLI/config option to globally adjust audio input level
-- **#15 Microphone Exclusion Zones** - Option to filter out very low/high frequencies from audio analysis
-
-### Phase 4: Visual Expansion (v0.2.1)
-**Priority: Medium** - New visual patterns and effects
-
-#### Visual Patterns
-- **#16 Fluid Dynamics** - Simple simulation of flowing liquid or smoke
-- **#17 Metaballs** - 2D or 3D implicit surface rendering
-
-#### Color & Palette Enhancements
-- **#18 Heatmap Color Mode** - Colors based on the calculated 'energy' or 'density' of the shader output
-- **#19 Emoji ASCII Palette** - Use a curated set of Unicode emojis for rendering
-
-### Phase 5: Distribution & Documentation (v0.2.2)
-**Priority: Low** - Packaging and documentation improvements
-
-#### Packaging
-- **#20 Static Musl Builds** - Provide portable binaries for various Linux systems
-- **#21 Homebrew/MacPorts** - Official packaging for macOS users
-- **#22 Windows Installer/Scoop** - Easier installation for Windows users
-
-#### Documentation
-- **#23 Advanced Shader Guide** - Walkthrough for writing complex custom WGSL shaders
-- **#24 Performance Tuning Guide** - Tips for users with low-end hardware
+#### Stability & Deployment
+- **#26 Simplified CLI** - Default `chroma` launches full VJ, minimal options
+- **#27 Invisible Error Handling** - Robust fallbacks to keep the show running
+- **#28 Headless Rendering** - Optimized for video capture without terminal
+- **#29 Easy Packaging** - Homebrew/Scoop one-step installation
+- **#30 Config Versioning** - Automatic internal configuration updates
 
 ## Implementation Priority Matrix
 
-| Feature | Category | Impact | Effort | Priority |
-|---------|----------|--------|--------|----------|
-| Shader Caching | Optimization | High | Medium | P0 |
-| Terminal Resize Handling | QoL | High | Low | P0 |
-| Frame Limiter | Optimization | Medium | Low | P0 |
-| Startup Config Picker | QoL | High | Medium | P1 |
-| Custom Keybinds | Feature | High | Medium | P1 |
-| Smooth Palette Cycling | QoL | Medium | Medium | P1 |
-| On-Screen Control Hints | QoL | Medium | Low | P1 |
-| Pause/Play Toggle | Feature | Medium | Low | P1 |
-| More Shader Uniforms | Feature | High | High | P2 |
-| Audio Sensitivity Control | Audio | Medium | Low | P2 |
-| Color Palette Editor | Feature | Medium | High | P2 |
-| Fluid Dynamics Pattern | Visual | Medium | High | P3 |
-| Metaballs Pattern | Visual | Medium | High | P3 |
-| Heatmap Color Mode | Visual | Low | Medium | P3 |
-| Emoji ASCII Palette | Visual | Low | Low | P3 |
-| Static Builds | Packaging | Low | Medium | P4 |
-| Advanced Shader Guide | Documentation | Low | High | P4 |
+| Feature | Phase | Impact | Effort | Priority |
+|---------|-------|--------|--------|----------|
+| Macro-State Engine | 1 | Critical | High | P0 |
+| BPM Detection | 1 | Critical | Medium | P0 |
+| Cross-Pattern Morphing | 1 | High | High | P0 |
+| Advanced Beat Mapping | 2 | High | Medium | P1 |
+| Intelligent Frequency Mapping | 2 | High | Medium | P1 |
+| Dynamic Gradients | 3 | Medium | Medium | P2 |
+| Shader Layering | 3 | Medium | High | P2 |
+| Auto-Recording | 3 | Low | Low | P3 |
+| Simplified CLI | 4 | Low | Low | P4 |
 
-## Technical Considerations
+## Technical Architecture
 
-### Performance Optimizations
-- **Shader Caching**: Implement a cache system for compiled WGSL shaders
-- **Buffer Pipelining**: Use multiple GPU buffers for async data transfer
-- **Resolution Scaling**: Detect terminal capabilities and adjust rendering accordingly
+### Macro-State Engine (MSE)
+```
+┌──────────────────────────────────────────────────────────┐
+│                   Audio Input                           │
+│                                                          │
+│  ┌────────────┐  ┌──────────────┐  ┌─────────────┐     │
+│  │   BPM      │  │   Beat       │  │   Frequency  │     │
+│  │ Detection  │  │   Mapping    │  │   Analysis   │     │
+│  └──────┬─────┘  └──────┬───────┘  └──────┬──────┘     │
+│         │                │                  │            │
+│         └────────────────┴──────────────────┘            │
+│                          ↓                               │
+│                  ┌───────────────┐                       │
+│                  │   Macro-State │                       │
+│                  │   Engine      │                       │
+│                  └───────┬───────┘                       │
+│                          ↓                               │
+│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐  │
+│  │   Pattern   │  │   Palette    │  │   Color Mode    │  │
+│  │ Selection   │  │   Selection  │  │   Selection     │  │
+│  └──────┬──────┘  └──────┬───────┘  └────────┬────────┘  │
+│         │                │                   │           │
+│         └────────────────┴───────────────────┘           │
+│                          ↓                               │
+│                  ┌───────────────┐                       │
+│                  │   Morphing    │                       │
+│                  │   Engine      │                       │
+│                  └───────────────┘                       │
+└──────────────────────────────────────────────────────────┘
+```
 
-### Architecture Changes
-- **Config System**: Extend TOML configuration to support keybind remapping
-- **TUI Components**: Add interactive elements for config selection and palette editing
-- **Audio Pipeline**: Enhance audio processing with configurable sensitivity and filtering
-
-### Compatibility
-- **Cross-platform**: Ensure all features work on Windows, Linux, and macOS
-- **Terminal Support**: Maintain compatibility with various terminal emulators
-- **GPU Drivers**: Support both Vulkan and DirectX backends
+### Audio Analysis Pipeline
+```
+Raw Audio → FFT → Band Separation → Beat Detection → BPM Analysis
+     ↓
+Energy Analysis → Mood Detection → Pattern Selection → Parameter Mapping
+     ↓
+Transition Timing → Morphing Control → Visual Output
+```
 
 ## Development Guidelines
 
-### Code Quality
-- Maintain existing Rust best practices
-- Add comprehensive tests for new features
-- Follow the established modular architecture
-- Document all public APIs
+### Autonomous Design Principles
+- **No Manual Override** - System makes all creative decisions
+- **Music-Driven Logic** - All transitions based on audio characteristics
+- **Smooth Transitions** - No jarring cuts, always morphing
+- **Professional Quality** - Production-ready autonomous performance
+- **Self-Optimizing** - System learns and adapts to audio patterns
 
-### User Experience
-- Maintain backward compatibility with existing configs
-- Provide clear migration paths for breaking changes
-- Include helpful error messages and documentation
-- Test on various hardware configurations
-
-### Performance
-- Benchmark all performance-critical changes
-- Maintain 2000+ FPS target on modern hardware
-- Optimize for both high-end and low-end systems
-- Provide performance tuning options
-
-## Contributing
-
-Contributions are welcome for any roadmap items! Please:
-
-1. **Create an issue** for the feature you want to work on
-2. **Fork the repository** and create a feature branch
-3. **Follow the existing code style** and architecture patterns
-4. **Add tests** for new functionality
-5. **Update documentation** as needed
-6. **Submit a pull request** with a clear description
+### Code Quality Standards
+- **Robust Error Handling** - Never crash, always fallback gracefully
+- **Performance Critical** - Maintain 60+ FPS for smooth morphing
+- **Modular Architecture** - Clean separation between audio analysis and visual control
+- **Comprehensive Testing** - Test with various music genres and audio sources
 
 ## Release Schedule
 
-- **v0.1.1** (Performance & Stability) - Target: 2-3 weeks
-- **v0.1.2** (User Experience) - Target: 4-5 weeks  
-- **v0.2.0** (Enhanced Features) - Target: 8-10 weeks
-- **v0.2.1** (Visual Expansion) - Target: 12-14 weeks
-- **v0.2.2** (Distribution & Documentation) - Target: 16-18 weeks
+- **v0.2.0** (Autonomous VJ Core) - Target: 4-6 weeks
+- **v0.2.1** (Advanced Audio) - Target: 8-10 weeks  
+- **v0.2.2** (Visual Excellence) - Target: 12-14 weeks
+- **v0.2.3** (Production Ready) - Target: 16-18 weeks
 
-*Timelines are estimates and may vary based on development capacity and community contributions.*
+## Contributing to Autonomous VJ
+
+Contributions should focus on:
+1. **Audio Analysis Improvements** - Better beat detection, frequency analysis
+2. **Pattern Morphing** - Smooth transition algorithms
+3. **Visual Patterns** - New shader patterns for the autonomous pool
+4. **Performance Optimization** - Ensuring smooth real-time operation
+5. **Error Resilience** - Keeping the show running under all conditions
 
 ---
 
-**Note**: This roadmap is a living document and will be updated as features are implemented and new requirements emerge. Community feedback and contributions are essential for prioritizing features effectively.
+**Chroma v0.2.0+** - *The World's First Autonomous Terminal VJ*
+
+*"Let the music control the visuals. Let Chroma be your virtual VJ."*

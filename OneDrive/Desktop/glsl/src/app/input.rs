@@ -14,6 +14,7 @@ pub fn handle_input(
   running: &mut bool,
   debug_log: &mut DebugLog,
   exit_confirmation: bool,
+  show_status_bar: &mut bool,
 ) -> Result<()> {
   if !event::poll(Duration::from_millis(0))? {
     return Ok(());
@@ -25,7 +26,7 @@ pub fn handle_input(
     ..
   }) = event::read()?
   {
-    handle_key_press(code, params, converter, running, debug_log, exit_confirmation)?;
+    handle_key_press(code, params, converter, running, debug_log, exit_confirmation, show_status_bar)?;
   }
 
   Ok(())
@@ -39,6 +40,7 @@ fn handle_key_press(
   running: &mut bool,
   debug_log: &mut DebugLog,
   exit_confirmation: bool,
+  show_status_bar: &mut bool,
 ) -> Result<()> {
   match code {
     // Quit
@@ -50,6 +52,16 @@ fn handle_key_press(
       } else {
         *running = false;
       }
+    }
+
+    // Toggle futuristic status bar visibility
+    KeyCode::Char('h') | KeyCode::Char('H') => {
+      *show_status_bar = !*show_status_bar;
+      writeln!(
+        debug_log,
+        "UI: Futuristic status bar {}",
+        if *show_status_bar { "shown" } else { "hidden" }
+      )?;
     }
 
     // Parameter adjustments (disabled when audio mode is active)
@@ -110,6 +122,20 @@ fn handle_key_press(
       let new_palette = palette_from_type(params.palette);
 
       converter.set_palette(new_palette);
+    }
+
+    // Trigger a manual beat (start beat effects)
+    KeyCode::Char('b') | KeyCode::Char('B') => {
+      params.beat_distortion_time = params.time; // start beat window
+      // Keep existing strengths but ensure zoom has a minimum
+      params.beat_zoom_strength = params.beat_zoom_strength.max(0.4);
+
+      writeln!(
+        debug_log,
+        "BEAT: Triggered (time {:.2}, zoom_strength {:.2})",
+        params.beat_distortion_time,
+        params.beat_zoom_strength
+      )?;
     }
 
     // Cycle through effects

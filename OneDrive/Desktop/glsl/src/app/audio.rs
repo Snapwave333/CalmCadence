@@ -17,16 +17,16 @@ pub fn update_audio_reactive(
   audio_analyzer: &mut Option<AudioAnalyzer>,
   delta_time: f32,
   debug_log: &mut DebugLog,
-) {
+) -> Option<f32> {
   if !params.audio_enabled {
-    return;
+    return None;
   }
 
   if let (Some(capture), Some(analyzer)) = (audio_capture, audio_analyzer) {
     let samples = capture.get_samples();
 
     if samples.is_empty() {
-      return;
+      return None;
     }
 
     let features = analyzer.analyze(&samples, delta_time);
@@ -37,7 +37,12 @@ pub fn update_audio_reactive(
     } else {
       apply_audio_reactivity(params, &features, debug_log);
     }
+
+    // Return beat strength for HUD synchronization
+    return Some(features.beat_strength);
   }
+
+  None
 }
 
 /// Apply decay to parameters when audio is silent
