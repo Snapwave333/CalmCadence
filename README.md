@@ -259,15 +259,15 @@ Notes:
   <table>
     <tr>
       <td>
-        <img src="https://github-readme-stats.vercel.app/api?username=Snapwave333&show_icons=true&theme=tokyonight&hide_border=true&count_private=true" alt="GitHub Stats" />
+        <img src="https://github-readme-stats.vercel.app/api?username=Snapwave333&show_icons=true&theme=catppuccin_mocha&hide_border=true&count_private=true" alt="GitHub Stats" />
       </td>
       <td>
-        <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Snapwave333&layout=compact&theme=tokyonight&hide_border=true&langs_count=8" alt="Top Languages" />
+        <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Snapwave333&layout=compact&theme=catppuccin_mocha&hide_border=true&langs_count=8" alt="Top Languages" />
       </td>
     </tr>
   </table>
 
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=Snapwave333&theme=tokyonight&hide_border=true" alt="GitHub Streak" />
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=Snapwave333&theme=catppuccin&hide_border=true" alt="GitHub Streak" />
 </div>
 
 ---
