@@ -1,19 +1,51 @@
-<p align="center">
-  <img src="CalmCadence_Branding_Pack/CalmCadence_HeroLogo.svg" alt="CalmCadence" width="680" />
-</p>
+![Header](https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=12&height=300&section=header&text=CalmCadence&fontSize=70&fontColor=ffffff&animation=twinkling&fontAlignY=38&desc=Your%20Daily%20Productivity%20Companion&descAlignY=55&descSize=20)
 
 <p align="center">
   <a href="https://github.com/Snapwave333/CalmCadence/actions/workflows/main.yml">
-    <img src="https://github.com/Snapwave333/CalmCadence/actions/workflows/main.yml/badge.svg" alt="Build: CI" />
+    <img src="https://github.com/Snapwave333/CalmCadence/actions/workflows/main.yml/badge.svg" alt="Build Status" />
+  </a>
+  <a href="https://github.com/Snapwave333/CalmCadence/releases">
+    <img src="https://img.shields.io/github/v/release/Snapwave333/CalmCadence?include_prereleases&logo=github&logoColor=white" alt="Latest Release" />
   </a>
   <img src="https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet&logoColor=white" alt=".NET 9" />
   <img src="https://img.shields.io/badge/WinUI-3-0078D4?logo=windows&logoColor=white" alt="WinUI 3" />
   <img src="https://img.shields.io/badge/Platform-Windows-00A4EF?logo=windows&logoColor=white" alt="Windows" />
+  <img src="https://img.shields.io/github/license/Snapwave333/CalmCadence?color=blue&logo=opensourceinitiative&logoColor=white" alt="License" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/Snapwave333/CalmCadence/stargazers">
+    <img src="https://img.shields.io/github/stars/Snapwave333/CalmCadence?style=social" alt="GitHub Stars" />
+  </a>
+  <a href="https://github.com/Snapwave333/CalmCadence/network/members">
+    <img src="https://img.shields.io/github/forks/Snapwave333/CalmCadence?style=social" alt="GitHub Forks" />
+  </a>
+  <a href="https://github.com/Snapwave333/CalmCadence/watchers">
+    <img src="https://img.shields.io/github/watchers/Snapwave333/CalmCadence?style=social" alt="GitHub Watchers" />
+  </a>
 </p>
 
 # CalmCadence
 
-A Windows (WinUI 3) productivity app that unifies tasks, calendar events, routines, and habits into a daily brief you can read and listen to. CalmCadence uses a local SQLite database, Entity Framework Core, and optional integrations (ICS import/export, Google Calendar, Gemini). It can generate audio and video summaries of your day, schedule background runs, and deliver quiet-hours-aware notifications.
+```yaml
+name: CalmCadence
+description: Your Daily Productivity Companion
+platform: Windows (WinUI 3)
+purpose: Unifies tasks, calendar events, routines, and habits into a daily brief
+features:
+  - Daily brief generation (text, audio, video)
+  - Local SQLite database with Entity Framework Core
+  - ICS import/export for calendar integration
+  - Google Calendar synchronization
+  - Gemini AI integration for smart summaries
+  - Background scheduling with quiet-hours awareness
+  - Multi-tier audio generation (NotebookLM + Gemini TTS)
+  - FFmpeg video slideshow generation
+architecture: Multi-project .NET solution
+target_audience: Productivity enthusiasts and busy professionals
+```
+
+> **CalmCadence** transforms your scattered productivity data into a cohesive daily experience. Whether you prefer reading, listening, or watching your daily brief, CalmCadence adapts to your workflow while respecting your focus time and sensory preferences.
 
 ## Table of Contents
 - Overview
@@ -34,6 +66,29 @@ This repository is organized as a multi-project .NET solution:
 - CalmCadence.Core — Domain models, interfaces, and services (Gemini, QuickAdd, etc.)
 - CalmCadence.Data — EF Core DbContext, model configurations, ICS service, data services
 - CalmCadence.Tests — Unit tests for core logic and data
+
+## 🛠️ Tech Stack
+
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/dotnetcore/dotnetcore-original.svg" alt=".NET" width="60" height="60"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg" alt="C#" width="60" height="60"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows8/windows8-original.svg" alt="WinUI 3" width="60" height="60"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sqlite/sqlite-original.svg" alt="SQLite" width="60" height="60"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google APIs" width="60" height="60"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git" width="60" height="60"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub" width="60" height="60"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg" alt="Visual Studio" width="60" height="60"/>
+</p>
+
+<div align="center">
+
+| Framework | Database | Integration | Tools |
+|-----------|----------|-------------|-------|
+| .NET 9 | Entity Framework Core | Google Calendar API | FFMpegCore |
+| WinUI 3 | SQLite | Ical.Net (ICS) | System.Speech |
+| CommunityToolkit.Mvvm | - | Gemini AI | Microsoft.Extensions.Hosting |
+
+</div>
 
 ## Features
 - Daily Brief generation: summary, agenda, top tasks, habit status
@@ -195,6 +250,36 @@ Notes:
 - Background scheduling: automatic daily brief generation at a configured time
 - Calendar sync: additional providers beyond ICS, e.g., Google Calendar
 - Audio pipeline: Multi-tier approach (NotebookLM primary, Gemini TTS fallback; offline fallback)
+
+---
+
+## 📊 GitHub Stats
+
+<div align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=Snapwave333&show_icons=true&theme=tokyonight&hide_border=true&count_private=true" alt="GitHub Stats" />
+</div>
+
+<div align="center">
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Snapwave333&layout=compact&theme=tokyonight&hide_border=true&langs_count=8" alt="Top Languages" />
+</div>
+
+<div align="center">
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=Snapwave333&theme=tokyonight&hide_border=true" alt="GitHub Streak" />
+</div>
+
+---
+
+<div align="center">
+  <img src="https://komarev.com/ghpvc/?username=Snapwave333&color=blueviolet&style=flat-square&label=Profile+Views" alt="Profile Views" />
+</div>
+
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Snapwave333/Snapwave333/output/github-contribution-grid-snake-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/Snapwave333/Snapwave333/output/github-contribution-grid-snake.svg">
+    <img alt="github contribution grid snake animation" src="https://raw.githubusercontent.com/Snapwave333/Snapwave333/output/github-contribution-grid-snake.svg">
+  </picture>
+</div>
 
 ## CI
 GitHub Actions workflow is defined at `.github/workflows/main.yml` and runs build + tests.
