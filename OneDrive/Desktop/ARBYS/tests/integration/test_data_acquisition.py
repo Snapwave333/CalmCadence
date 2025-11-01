@@ -44,7 +44,7 @@ class TestOrchestratedDataFetcher:
 
             orchestrator = OrchestratorStub()
             fetcher = OrchestratedDataFetcher(orchestrator)
-            results = fetcher.fetch_odds("soccer")
+            results = fetcher.fetch_odds_sync("soccer")
             assert isinstance(results, list)
         else:
             from src.data_orchestrator import MultiAPIOrchestrator
@@ -52,6 +52,6 @@ class TestOrchestratedDataFetcher:
             mock_orchestrator = Mock(spec=MultiAPIOrchestrator)
             mock_orchestrator.fetch_odds.return_value = ([{"event": "Test"}], [], {})
             fetcher = OrchestratedDataFetcher(mock_orchestrator)
-            results = fetcher.fetch_odds("soccer")
+            results = fetcher.fetch_odds_sync("soccer")
             assert isinstance(results, list)
             mock_orchestrator.fetch_odds.assert_called_once_with("soccer")

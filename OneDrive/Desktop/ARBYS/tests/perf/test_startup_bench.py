@@ -45,7 +45,7 @@ class TestStartupPerformance:
             return ArbitrageBotGUI()
 
         window = benchmark(create_window)
-        qtbot.addWidget(window)
+        window.set_update_thread_enabled(False)  # Disable thread for test stability
 
         # Target: window creation <200ms
         assert window is not None
