@@ -39,8 +39,16 @@ class TestStakeCalculator:
             event_name="Test",
             market="h2h",
             outcomes=[
-                {"outcome_name": "Home", "odds": 2.1, "bookmaker": "A"},  # Implied prob: 1/2.1 = 0.476
-                {"outcome_name": "Away", "odds": 2.15, "bookmaker": "B"},  # Implied prob: 1/2.15 = 0.465
+                {
+                    "outcome_name": "Home",
+                    "odds": 2.1,
+                    "bookmaker": "A",
+                },  # Implied prob: 1/2.1 = 0.476
+                {
+                    "outcome_name": "Away",
+                    "odds": 2.15,
+                    "bookmaker": "B",
+                },  # Implied prob: 1/2.15 = 0.465
             ],
             total_implied_probability=0.476 + 0.465,  # 0.941 - 5.9% arbitrage
             profit_percentage=((1.0 / 0.941) - 1.0) * 100,
@@ -104,7 +112,9 @@ class TestStakeCalculator:
         if any(s["stake"] < calc.min_stake_threshold for s in dist.stakes):
             assert len(dist.warnings) > 0
 
-    def test_calculate_stakes_with_account_health(self, account_health_manager, sample_account_profile):
+    def test_calculate_stakes_with_account_health(
+        self, account_health_manager, sample_account_profile
+    ):
         """Test stake calculation with account health manager."""
         calc = StakeCalculator(account_health_manager=account_health_manager, round_stakes=False)
 
@@ -212,7 +222,11 @@ class TestStakeDistribution:
     def test_init_default_warnings(self):
         """Test that warnings list is initialized."""
         dist = StakeDistribution(
-            total_stake=100.0, stakes=[], total_return=105.0, guaranteed_profit=5.0, profit_percentage=5.0
+            total_stake=100.0,
+            stakes=[],
+            total_return=105.0,
+            guaranteed_profit=5.0,
+            profit_percentage=5.0,
         )
         assert dist.warnings == []
 

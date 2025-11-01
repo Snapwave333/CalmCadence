@@ -93,7 +93,9 @@ class SportsOpenDataProvider(MetadataProvider):
                 data = response.json()
                 for match_data in data.get("matches", []):
                     try:
-                        start_time = datetime.fromisoformat(match_data["date"].replace("Z", "+00:00"))
+                        start_time = datetime.fromisoformat(
+                            match_data["date"].replace("Z", "+00:00")
+                        )
 
                         matches.append(
                             MatchMetadata(
@@ -131,7 +133,9 @@ class SportsOpenDataProvider(MetadataProvider):
                 data = response.json()
                 for injury_data in data.get("injuries", []):
                     try:
-                        reported_date = datetime.fromisoformat(injury_data["date"].replace("Z", "+00:00"))
+                        reported_date = datetime.fromisoformat(
+                            injury_data["date"].replace("Z", "+00:00")
+                        )
 
                         expected_return = None
                         if injury_data.get("expected_return"):
@@ -172,7 +176,9 @@ class SportsOpenDataProvider(MetadataProvider):
                 data = response.json()
                 for change_data in data.get("changes", []):
                     try:
-                        timestamp = datetime.fromisoformat(change_data["timestamp"].replace("Z", "+00:00"))
+                        timestamp = datetime.fromisoformat(
+                            change_data["timestamp"].replace("Z", "+00:00")
+                        )
 
                         changes.append(
                             LineupChange(

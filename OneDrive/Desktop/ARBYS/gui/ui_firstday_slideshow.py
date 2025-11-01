@@ -178,7 +178,8 @@ class FirstDaySlideshowDialog(QDialog):
             # Convert to file:// URL
             file_url = QUrl.fromLocalFile(html_path)
             # In test mode, load about:blank to avoid file system dependencies
-            if TEST_MODE:
+            test_mode = os.getenv("TEST_MODE", "0") == "1"
+            if test_mode:
                 self.web_view.load(QUrl("about:blank"))
             else:
                 self.web_view.load(file_url)
@@ -238,7 +239,9 @@ class FirstDaySlideshowDialog(QDialog):
         project_root = os.path.dirname(os.path.dirname(current_file))
 
         # Construct path to slideshow HTML
-        slideshow_dir = os.path.join(project_root, "Redline_FirstDay_Slideshow_HTML(1)", "redline_slideshow")
+        slideshow_dir = os.path.join(
+            project_root, "Redline_FirstDay_Slideshow_HTML(1)", "redline_slideshow"
+        )
         html_path = os.path.join(slideshow_dir, "index.html")
 
         # Normalize path separators

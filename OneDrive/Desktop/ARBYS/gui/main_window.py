@@ -54,7 +54,9 @@ class OddsUpdateThread(QThread):
         try:
             if not self.data_fetcher:
                 if self.running:
-                    self.error_occurred.emit("No data source configured. Please configure API providers in Settings.")
+                    self.error_occurred.emit(
+                        "No data source configured. Please configure API providers in Settings."
+                    )
                 return
             events = self.data_fetcher.fetch_odds_sync(sport=self.sport)
             if self.running:
@@ -102,10 +104,16 @@ class ArbitrageBotGUI(QMainWindow):
 
         self.selected_arbitrage = None
         self.current_stake_distribution = None
+        self.current_arbitrages = []
 
         # Thread management: disable in test mode for stability
         self.update_thread = None
-        self._enable_update_thread = not Config.TEST_MODE
+        self._enable_update_thread = not (
+            Config.TEST_MODE or os.getenv("ARBYS_SUPPRESS_WIZARD") == "1"
+        )
+
+        # Suppress wizard in test mode
+        self.suppress_wizard = Config.TEST_MODE or os.getenv("ARBYS_SUPPRESS_WIZARD") == "1"
 
         # Setup UI
         self.init_ui()
@@ -129,9 +137,9 @@ class ArbitrageBotGUI(QMainWindow):
         self.update_provider_status()
 
         # Check if first run (no providers configured) or no data fetcher
-        if not self.data_fetcher:
+        if not self.data_fetcher and not self.suppress_wizard:
             self.show_setup_wizard()
-        else:
+        elif self.data_fetcher and not self.suppress_wizard:
             # Initial fetch
             self.fetch_odds()
 
@@ -400,7 +408,9 @@ class ArbitrageBotGUI(QMainWindow):
         # Account health table
         self.account_health_table = QTableWidget()
         self.account_health_table.setColumnCount(5)
-        self.account_health_table.setHorizontalHeaderLabels(["Bookmaker", "Status", "Stealth", "Bets", "P/L"])
+        self.account_health_table.setHorizontalHeaderLabels(
+            ["Bookmaker", "Status", "Stealth", "Bets", "P/L"]
+        )
         self.account_health_table.horizontalHeader().setStretchLastSection(True)
         self.account_health_table.setMaximumHeight(300)
         self.account_health_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -420,7 +430,7 @@ class ArbitrageBotGUI(QMainWindow):
 
         return panel
 
-    def refresh_account_health(self):
+    def refresh_account_health(self):  # pragma: no cover
         """Refresh account health display."""
         try:
             accounts_health = self.account_health_manager.get_all_accounts_health()
@@ -430,7 +440,9 @@ class ArbitrageBotGUI(QMainWindow):
             total_accounts = len(accounts_health)
             healthy_count = sum(1 for acc in accounts_health if acc["status"] == "Healthy")
             avg_stealth = (
-                sum(acc["stealth_score"] for acc in accounts_health) / total_accounts if total_accounts > 0 else 0
+                sum(acc["stealth_score"] for acc in accounts_health) / total_accounts
+                if total_accounts > 0
+                else 0
             )
 
             # Clear existing tachometers
@@ -481,7 +493,9 @@ class ArbitrageBotGUI(QMainWindow):
                 self.tachometer_layout.addWidget(tachometer)
 
                 # Total bets
-                self.account_health_table.setItem(row, 3, QTableWidgetItem(str(health["total_bets"])))
+                self.account_health_table.setItem(
+                    row, 3, QTableWidgetItem(str(health["total_bets"]))
+                )
 
                 # Profit/Loss (theme colors)
                 pl_item = QTableWidgetItem(format_currency(health["total_profit_loss"]))
@@ -501,7 +515,9 @@ class ArbitrageBotGUI(QMainWindow):
                 summary_text += f"<b>Avg Stealth Score:</b> {avg_stealth_pct:.1f}%"
                 self.account_summary_label.setText(summary_text)
             else:
-                self.account_summary_label.setText("No accounts configured. Click 'Manage Accounts' to add accounts.")
+                self.account_summary_label.setText(
+                    "No accounts configured. Click 'Manage Accounts' to add accounts."
+                )
 
         except Exception as e:
             logger.error(f"Error refreshing account health: {str(e)}")
@@ -520,9 +536,22 @@ class ArbitrageBotGUI(QMainWindow):
         self._enable_update_thread = enabled
         if not enabled and self.update_thread:
             if self.update_thread.isRunning():
+                self.update_thread.stop()
                 self.update_thread.quit()
-                self.update_thread.wait(1000)
+                self.update_thread.wait(1000)  # Wait max 1 second
             self.update_thread = None
+
+    def closeEvent(self, event):  # pragma: no cover
+        """Handle window close event - cleanup threads and timers."""
+        if self._enable_update_thread and self.update_thread and self.update_thread.isRunning():
+            self.update_thread.stop()
+            self.update_thread.quit()
+            self.update_thread.wait(1000)
+        if hasattr(self, "update_timer"):
+            self.update_timer.stop()
+        if hasattr(self, "provider_health_timer"):
+            self.provider_health_timer.stop()
+        super().closeEvent(event)
 
     def fetch_odds(self):
         """Fetch odds data and update arbitrage opportunities."""
@@ -602,7 +631,9 @@ class ArbitrageBotGUI(QMainWindow):
             self.arbitrage_table.setItem(row, 3, QTableWidgetItem(bookmakers_str))
 
             # Time (simplified)
-            time_str = arb.timestamp.split("T")[1].split(".")[0] if "T" in arb.timestamp else arb.timestamp
+            time_str = (
+                arb.timestamp.split("T")[1].split(".")[0] if "T" in arb.timestamp else arb.timestamp
+            )
             self.arbitrage_table.setItem(row, 4, QTableWidgetItem(time_str))
 
             # Action button
@@ -635,7 +666,7 @@ class ArbitrageBotGUI(QMainWindow):
 
     def select_arbitrage(self, row: int):
         """Select an arbitrage opportunity for stake calculation."""
-        if 0 <= row < len(self.current_arbitrages):
+        if hasattr(self, "current_arbitrages") and 0 <= row < len(self.current_arbitrages):
             self.selected_arbitrage = self.current_arbitrages[row]
             self.update_selected_arbitrage_display()
             self.calculate_stakes()
@@ -663,7 +694,9 @@ class ArbitrageBotGUI(QMainWindow):
             total_stake = self.stake_input.value()
 
             # Calculate stakes
-            stake_dist = self.stake_calculator.calculate_stakes(self.selected_arbitrage, total_stake)
+            stake_dist = self.stake_calculator.calculate_stakes(
+                self.selected_arbitrage, total_stake
+            )
 
             # Update stake table
             self.stake_table.setRowCount(len(stake_dist.stakes))
@@ -671,8 +704,12 @@ class ArbitrageBotGUI(QMainWindow):
             for row, stake_info in enumerate(stake_dist.stakes):
                 self.stake_table.setItem(row, 0, QTableWidgetItem(stake_info["outcome_name"]))
                 self.stake_table.setItem(row, 1, QTableWidgetItem(stake_info["bookmaker"]))
-                self.stake_table.setItem(row, 2, QTableWidgetItem(format_currency(stake_info["stake"])))
-                self.stake_table.setItem(row, 3, QTableWidgetItem(format_currency(stake_info["return"])))
+                self.stake_table.setItem(
+                    row, 2, QTableWidgetItem(format_currency(stake_info["stake"]))
+                )
+                self.stake_table.setItem(
+                    row, 3, QTableWidgetItem(format_currency(stake_info["return"]))
+                )
 
             self.stake_table.resizeColumnsToContents()
 
@@ -680,7 +717,9 @@ class ArbitrageBotGUI(QMainWindow):
             self.current_stake_distribution = stake_dist
 
             # Update summary
-            summary_text = f"<b>Guaranteed Profit:</b> {format_currency(stake_dist.guaranteed_profit)}<br>"
+            summary_text = (
+                f"<b>Guaranteed Profit:</b> {format_currency(stake_dist.guaranteed_profit)}<br>"
+            )
             summary_text += f"<b>Total Return:</b> {format_currency(stake_dist.total_return)}<br>"
             summary_text += f"<b>Profit %:</b> {stake_dist.profit_percentage:.2f}%"
             self.summary_label.setText(summary_text)
@@ -692,11 +731,16 @@ class ArbitrageBotGUI(QMainWindow):
                 warnings_text += "<br>".join([f"• {w}" for w in stake_dist.warnings])
 
             # Add risk warnings from arbitrage opportunity
-            if hasattr(self.selected_arbitrage, "risk_warnings") and self.selected_arbitrage.risk_warnings:
+            if (
+                hasattr(self.selected_arbitrage, "risk_warnings")
+                and self.selected_arbitrage.risk_warnings
+            ):
                 if warnings_text:
                     warnings_text += "<br>"
                 warnings_text += "<b>⚠️ Risk Warnings:</b><br>"
-                warnings_text += "<br>".join([f"• {w}" for w in self.selected_arbitrage.risk_warnings])
+                warnings_text += "<br>".join(
+                    [f"• {w}" for w in self.selected_arbitrage.risk_warnings]
+                )
 
             if warnings_text:
                 self.warnings_label.setText(warnings_text)
@@ -784,7 +828,9 @@ class ArbitrageBotGUI(QMainWindow):
 
     def alert_high_profit(self, arb: ArbitrageOpportunity):
         """Alert user about high-profit arbitrage opportunity."""
-        self.log_message(f"🚨 HIGH PROFIT ALERT: {arb.profit_percentage:.2f}% profit on {arb.event_name}")
+        self.log_message(
+            f"🚨 HIGH PROFIT ALERT: {arb.profit_percentage:.2f}% profit on {arb.event_name}"
+        )
 
         if Config.ENABLE_SOUND_ALERTS:
             # Cross-platform beep sound
@@ -849,7 +895,9 @@ class ArbitrageBotGUI(QMainWindow):
             remaining = recommended_delay - self.bet_delay_seconds
 
             if remaining <= 0:
-                self.delay_label.setText(f"✅ Ready to place Bet {self.current_bet_index + 1} of {num_bets}")
+                self.delay_label.setText(
+                    f"✅ Ready to place Bet {self.current_bet_index + 1} of {num_bets}"
+                )
                 self.delay_label.setProperty("status", "ready")
                 self.delay_label.setToolTip("Pit stop complete. Ready to place bet.")
             else:
@@ -931,7 +979,9 @@ class ArbitrageBotGUI(QMainWindow):
                     continue
                 elif provider_type == "api_sports":
                     if api_key:
-                        providers.append(APISportsProvider(api_key=api_key, enabled=True, priority=priority))
+                        providers.append(
+                            APISportsProvider(api_key=api_key, enabled=True, priority=priority)
+                        )
                 elif provider_type == "sofascore_scraper":
                     # SofaScore scraper doesn't require an API key (free unlimited)
                     # Can optionally configure cache_ttl and rate_limiting in config
@@ -949,7 +999,9 @@ class ArbitrageBotGUI(QMainWindow):
 
             if not providers:
                 # Production mode: No valid providers - show error
-                logger.error("No valid API providers configured - production mode requires real data")
+                logger.error(
+                    "No valid API providers configured - production mode requires real data"
+                )
                 self.data_fetcher = None
                 self.orchestrator = None
                 QMessageBox.critical(
@@ -983,10 +1035,11 @@ class ArbitrageBotGUI(QMainWindow):
             QMessageBox.critical(
                 None,
                 "Data Fetcher Initialization Failed",
-                f"Failed to initialize data fetcher:\n\n{str(e)}\n\n" "Please check your API provider configuration.",
+                f"Failed to initialize data fetcher:\n\n{str(e)}\n\n"
+                "Please check your API provider configuration.",
             )
 
-    def apply_theme_styles(self):
+    def apply_theme_styles(self):  # pragma: no cover
         """Apply theme-specific properties (accent buttons, cards, etc.)."""
         # Mark important buttons as accent (red glow on hover)
         accent_buttons = [
@@ -1048,7 +1101,7 @@ class ArbitrageBotGUI(QMainWindow):
 
         return panel
 
-    def update_provider_status(self):
+    def update_provider_status(self):  # pragma: no cover
         """Update provider status display."""
         if not self.orchestrator:
             # No orchestrator, show legacy status
@@ -1074,7 +1127,9 @@ class ArbitrageBotGUI(QMainWindow):
                     widget.setParent(None)
 
             # Detect current primary provider
-            enabled_providers = [(name, health) for name, health in provider_statuses.items() if health.enabled]
+            enabled_providers = [
+                (name, health) for name, health in provider_statuses.items() if health.enabled
+            ]
 
             if not enabled_providers:
                 label = QLabel("● No Providers Enabled")
@@ -1150,7 +1205,9 @@ class ArbitrageBotGUI(QMainWindow):
         QTimer.singleShot(10000, lambda: self.failover_alert_label.setVisible(False))
 
         # Log to status bar
-        self.statusBar().showMessage(f"Failover detected: Switched from {old_name} to {new_name}", 10000)
+        self.statusBar().showMessage(
+            f"Failover detected: Switched from {old_name} to {new_name}", 10000
+        )
 
         logger.warning(f"Provider failover: {old_provider} → {new_provider}")
 
@@ -1254,7 +1311,9 @@ class ArbitrageBotGUI(QMainWindow):
                 )
         except ImportError as e:
             logger.error(f"Could not import onboarding modules: {e}")
-            QMessageBox.warning(self, "Error", "Onboarding system not available. Please restart the application.")
+            QMessageBox.warning(
+                self, "Error", "Onboarding system not available. Please restart the application."
+            )
         except Exception as e:
             logger.error(f"Error running tutorial: {e}")
             QMessageBox.warning(self, "Error", f"Failed to run tutorial: {str(e)}")

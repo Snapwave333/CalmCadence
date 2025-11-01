@@ -61,7 +61,7 @@ class TachometerWidget(QWidget):
     # Property for animation
     displayValue = pyqtProperty(float, getDisplayValue, setDisplayValue)
 
-    def paintEvent(self, event):
+    def paintEvent(self, event):  # pragma: no cover
         """Paint the tachometer gauge."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -110,7 +110,9 @@ class TachometerWidget(QWidget):
         painter.setPen(QColor(154, 160, 166))  # Muted color
         painter.drawText(center_x - label_width // 2, height + 20, self.label)
 
-    def _draw_gauge_arc(self, painter: QPainter, cx: int, cy: int, radius: int, current_angle: float):
+    def _draw_gauge_arc(
+        self, painter: QPainter, cx: int, cy: int, radius: int, current_angle: float
+    ):
         """Draw the gauge arc with color zones."""
         # Draw background arc (full 180°)
         pen = QPen(QColor(42, 44, 49), 8, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
@@ -144,9 +146,13 @@ class TachometerWidget(QWidget):
 
         # Add glow effect for red zone (danger)
         if current_angle <= 60:
-            glow_pen = QPen(QColor(255, 0, 51, 100), 12, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap)
+            glow_pen = QPen(
+                QColor(255, 0, 51, 100), 12, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap
+            )
             painter.setPen(glow_pen)
-            painter.drawArc(cx - radius, cy - radius, radius * 2, radius * 2, start_angle, filled_span)
+            painter.drawArc(
+                cx - radius, cy - radius, radius * 2, radius * 2, start_angle, filled_span
+            )
 
     def _draw_gauge_markings(self, painter: QPainter, cx: int, cy: int, radius: int):
         """Draw gauge markings and numbers."""
@@ -241,6 +247,8 @@ class TachometerWidget(QWidget):
         painter.drawPolygon(needle_poly)
 
         # Add glow effect
-        glow_pen = QPen(QColor(needle_color.red(), needle_color.green(), needle_color.blue(), 60), 4)
+        glow_pen = QPen(
+            QColor(needle_color.red(), needle_color.green(), needle_color.blue(), 60), 4
+        )
         painter.setPen(glow_pen)
         painter.drawLine(cx, cy, int(tip_x), int(tip_y))

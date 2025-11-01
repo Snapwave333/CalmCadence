@@ -218,7 +218,9 @@ class ArbitrageDetector:
             market_age_hours=market_age_hours,
         )
 
-    def _evaluate_risk(self, bookmakers: list[str], market_age_hours: float | None) -> tuple[str, list[str]]:
+    def _evaluate_risk(
+        self, bookmakers: list[str], market_age_hours: float | None
+    ) -> tuple[str, list[str]]:
         """
         Evaluate risk level for an arbitrage opportunity.
 

@@ -57,10 +57,14 @@ class ProbabilityModel:
         Returns:
             Market efficiency score
         """
-        total_probability = sum(self.calculate_implied_probability(outcome.get("odds", 0)) for outcome in outcomes)
+        total_probability = sum(
+            self.calculate_implied_probability(outcome.get("odds", 0)) for outcome in outcomes
+        )
         return total_probability
 
-    def detect_value_discrepancy(self, odds_data: dict, statistical_probability: float) -> dict | None:
+    def detect_value_discrepancy(
+        self, odds_data: dict, statistical_probability: float
+    ) -> dict | None:
         """
         Detect value discrepancy between odds and statistical model.
 
@@ -90,7 +94,9 @@ class ProbabilityModel:
                 "statistical_probability": statistical_probability,
                 "odds_implied_probability": best_implied,
                 "discrepancy": discrepancy,
-                "value_direction": ("favorite" if statistical_probability > best_implied else "underdog"),
+                "value_direction": (
+                    "favorite" if statistical_probability > best_implied else "underdog"
+                ),
             }
 
         return None
@@ -108,7 +114,9 @@ class SimpleHistoricalModel(ProbabilityModel):
         """
         self.historical_data = historical_data
 
-    def estimate_win_probability(self, home_team: str, away_team: str, league: str = None) -> float | None:
+    def estimate_win_probability(
+        self, home_team: str, away_team: str, league: str = None
+    ) -> float | None:
         """
         Estimate win probability based on historical performance.
 
@@ -162,7 +170,9 @@ class FeedMashupAnalyzer:
         """
         self.probability_model = probability_model
 
-    def analyze_odds_with_model(self, odds_events: list[dict], team_metadata: dict = None) -> list[dict]:
+    def analyze_odds_with_model(
+        self, odds_events: list[dict], team_metadata: dict = None
+    ) -> list[dict]:
         """
         Analyze odds events using probability model.
 
@@ -178,7 +188,9 @@ class FeedMashupAnalyzer:
         for event in odds_events:
             analysis = {
                 **event,
-                "market_efficiency": self.probability_model.calculate_market_efficiency(event.get("outcomes", [])),
+                "market_efficiency": self.probability_model.calculate_market_efficiency(
+                    event.get("outcomes", [])
+                ),
                 "value_discrepancies": [],
             }
 
@@ -191,7 +203,9 @@ class FeedMashupAnalyzer:
                     est_prob = self.probability_model.estimate_win_probability(home_team, away_team)
 
                     if est_prob:
-                        discrepancy = self.probability_model.detect_value_discrepancy(event, est_prob)
+                        discrepancy = self.probability_model.detect_value_discrepancy(
+                            event, est_prob
+                        )
                         if discrepancy:
                             analysis["value_discrepancies"].append(discrepancy)
 

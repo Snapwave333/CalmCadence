@@ -91,7 +91,9 @@ class HistoricalDataStorage:
         conn.commit()
         conn.close()
 
-    def store_odds_record(self, event_data: dict, provider: str, arbitrage_info: dict = None) -> int:
+    def store_odds_record(
+        self, event_data: dict, provider: str, arbitrage_info: dict = None
+    ) -> int:
         """
         Store an odds record.
 

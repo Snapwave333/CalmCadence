@@ -55,7 +55,9 @@ class APIProviderDialog(QDialog):
         # Provider list table
         self.provider_table = QTableWidget()
         self.provider_table.setColumnCount(5)
-        self.provider_table.setHorizontalHeaderLabels(["Provider", "API Key", "Priority", "Status", "Health"])
+        self.provider_table.setHorizontalHeaderLabels(
+            ["Provider", "API Key", "Priority", "Status", "Health"]
+        )
         self.provider_table.horizontalHeader().setStretchLastSection(True)
         self.provider_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.provider_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
@@ -361,7 +363,8 @@ class APIProviderDialog(QDialog):
                     QMessageBox.information(
                         self,
                         "Connection Test Successful",
-                        "✓ SofaScore Scraper is working!\n\n" "This free scraper doesn't require an API key.",
+                        "✓ SofaScore Scraper is working!\n\n"
+                        "This free scraper doesn't require an API key.",
                     )
                 except Exception as e:
                     QMessageBox.warning(
@@ -377,4 +380,6 @@ class APIProviderDialog(QDialog):
                     f"Connection testing not yet implemented for {provider_type}",
                 )
         except Exception as e:
-            QMessageBox.warning(self, "Connection Test Failed", f"Failed to test provider:\n{str(e)}")
+            QMessageBox.warning(
+                self, "Connection Test Failed", f"Failed to test provider:\n{str(e)}"
+            )

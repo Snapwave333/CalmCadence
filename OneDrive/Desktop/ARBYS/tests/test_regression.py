@@ -15,11 +15,15 @@ class TestLegacySingleAPIMode:
 
     def test_legacy_fetcher_still_works(self):
         """Verify legacy OddsDataFetcher still functions - skipped, paid API removed."""
-        pytest.skip("The Odds API removed - paid service not available. Use SofaScore Scraper instead.")
+        pytest.skip(
+            "The Odds API removed - paid service not available. Use SofaScore Scraper instead."
+        )
 
     def test_legacy_detector_still_works(self, account_health_manager):
         """Verify legacy ArbitrageDetector still functions."""
-        detector = ArbitrageDetector(min_profit_percentage=1.0, account_health_manager=account_health_manager)
+        detector = ArbitrageDetector(
+            min_profit_percentage=1.0, account_health_manager=account_health_manager
+        )
 
         # Sample odds data
         outcomes = [
@@ -39,7 +43,9 @@ class TestLegacySingleAPIMode:
 
         from src.arbitrage import ArbitrageOpportunity
 
-        calculator = StakeCalculator(round_stakes=True, account_health_manager=account_health_manager)
+        calculator = StakeCalculator(
+            round_stakes=True, account_health_manager=account_health_manager
+        )
 
         arb = ArbitrageOpportunity(
             event_name="Test",

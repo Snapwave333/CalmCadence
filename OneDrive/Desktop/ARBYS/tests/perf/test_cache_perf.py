@@ -15,7 +15,9 @@ class TestCachePerformance:
         manager = AccountHealthManager(db_path=temp_db, enable_cache=True)
 
         # Create test account
-        profile = AccountProfile(bookmaker_name="TestBookmaker", account_username="test", stealth_score=0.8)
+        profile = AccountProfile(
+            bookmaker_name="TestBookmaker", account_username="test", stealth_score=0.8
+        )
         manager.db.create_account(profile)
 
         # Warm cache
@@ -32,7 +34,9 @@ class TestCachePerformance:
         """Benchmark uncached account health lookups."""
         manager = AccountHealthManager(db_path=temp_db, enable_cache=False)
 
-        profile = AccountProfile(bookmaker_name="TestBookmaker2", account_username="test", stealth_score=0.8)
+        profile = AccountProfile(
+            bookmaker_name="TestBookmaker2", account_username="test", stealth_score=0.8
+        )
         manager.db.create_account(profile)
 
         def lookup():

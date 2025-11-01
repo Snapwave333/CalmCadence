@@ -24,13 +24,8 @@ def test_main_window_creation(qtbot, qapp):
     if not hasattr(Config, "ODDS_API_KEY"):
         Config.ODDS_API_KEY = ""
 
-    # Mock the setup wizard to prevent it from showing during tests
-    import unittest.mock
-
-    with unittest.mock.patch("gui.main_window.ArbitrageBotGUI.show_setup_wizard"):
-        window = ArbitrageBotGUI()
-        window.set_update_thread_enabled(False)  # Disable thread for test stability
-        qtbot.addWidget(window)
+    window = ArbitrageBotGUI()
+    window.set_update_thread_enabled(False)  # Disable thread for test stability
 
     assert window is not None
     assert hasattr(window, "show")
@@ -45,12 +40,9 @@ def test_main_window_visibility(qtbot, qapp):
     if not hasattr(Config, "ODDS_API_KEY"):
         Config.ODDS_API_KEY = ""
 
-    import unittest.mock
-
-    with unittest.mock.patch("gui.main_window.ArbitrageBotGUI.show_setup_wizard"):
-        window = ArbitrageBotGUI()
-        qtbot.addWidget(window)
-        window.show()
+    window = ArbitrageBotGUI()
+    window.set_update_thread_enabled(False)
+    window.show()
 
     assert window.isVisible()
 
@@ -64,11 +56,8 @@ def test_main_window_widgets_initialized(qtbot, qapp):
     if not hasattr(Config, "ODDS_API_KEY"):
         Config.ODDS_API_KEY = ""
 
-    import unittest.mock
-
-    with unittest.mock.patch("gui.main_window.ArbitrageBotGUI.show_setup_wizard"):
-        window = ArbitrageBotGUI()
-        qtbot.addWidget(window)
+    window = ArbitrageBotGUI()
+    window.set_update_thread_enabled(False)
 
     # Check for key widgets
     assert hasattr(window, "account_health_manager")
@@ -86,12 +75,9 @@ def test_main_window_close(qtbot, qapp):
     if not hasattr(Config, "ODDS_API_KEY"):
         Config.ODDS_API_KEY = ""
 
-    import unittest.mock
-
-    with unittest.mock.patch("gui.main_window.ArbitrageBotGUI.show_setup_wizard"):
-        window = ArbitrageBotGUI()
-        qtbot.addWidget(window)
-        window.show()
+    window = ArbitrageBotGUI()
+    window.set_update_thread_enabled(False)
+    window.show()
 
     # Close window
     window.close()

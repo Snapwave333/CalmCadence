@@ -13,7 +13,8 @@ class TestArbitragePerformance:
         """Benchmark arbitrage detection with small dataset."""
         detector = ArbitrageDetector(min_profit_percentage=0.1)
         outcomes = [
-            {"outcome_name": f"Outcome{i}", "odds": 2.0 + (i * 0.1), "bookmaker": f"Bookmaker{i}"} for i in range(3)
+            {"outcome_name": f"Outcome{i}", "odds": 2.0 + (i * 0.1), "bookmaker": f"Bookmaker{i}"}
+            for i in range(3)
         ]
 
         result = benchmark(detector.detect_arbitrage, outcomes)

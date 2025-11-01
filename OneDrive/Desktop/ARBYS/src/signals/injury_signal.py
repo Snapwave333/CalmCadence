@@ -63,7 +63,8 @@ class InjurySignalDetector:
 
         signals["has_injuries"] = True
         signals["key_player_injuries"] = [
-            {"player": inj.player_name, "injury": inj.injury_type, "status": inj.status} for inj in recent_injuries
+            {"player": inj.player_name, "injury": inj.injury_type, "status": inj.status}
+            for inj in recent_injuries
         ]
 
         # Count critical injuries (out status)
@@ -123,7 +124,8 @@ class InjurySignalDetector:
             signals["has_changes"] = True
             signals["change_count"] = len(recent_changes)
             signals["recent_changes"] = [
-                {"player": ch.player_name, "change_type": ch.change_type, "reason": ch.reason} for ch in recent_changes
+                {"player": ch.player_name, "change_type": ch.change_type, "reason": ch.reason}
+                for ch in recent_changes
             ]
 
             if len(recent_changes) >= 2:

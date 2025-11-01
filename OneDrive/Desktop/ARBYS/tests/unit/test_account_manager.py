@@ -14,7 +14,10 @@ class TestAccountDatabase:
     def test_create_account(self, account_db):
         """Test creating an account."""
         profile = AccountProfile(
-            bookmaker_name="TestBookmaker", account_username="test_user", stealth_score=0.9, account_status="Healthy"
+            bookmaker_name="TestBookmaker",
+            account_username="test_user",
+            stealth_score=0.9,
+            account_status="Healthy",
         )
 
         account_id = account_db.create_account(profile)
@@ -49,7 +52,9 @@ class TestAccountDatabase:
         deleted = account_db.get_account(sample_account_profile.bookmaker_name)
         assert deleted is None
 
-    def test_get_all_accounts(self, account_db, sample_account_profile, low_stealth_account_profile):
+    def test_get_all_accounts(
+        self, account_db, sample_account_profile, low_stealth_account_profile
+    ):
         """Test getting all accounts."""
         all_accounts = account_db.get_all_accounts()
         assert isinstance(all_accounts, list)

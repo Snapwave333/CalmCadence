@@ -116,7 +116,9 @@ class DailyRateLimiter:
     def get_reset_time(self) -> datetime | None:
         """Get UTC datetime when the daily limit resets."""
         now = datetime.now(timezone.utc)
-        tomorrow = (now.date() + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        tomorrow = (now.date() + timedelta(days=1)).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
         return tomorrow.replace(tzinfo=timezone.utc)
 
 
@@ -174,7 +176,9 @@ class APISportsProvider(OddsAPIProvider):
         # Check rate limit
         if not self.rate_limiter.can_make_request():
             reset_time = self.rate_limiter.get_reset_time()
-            logger.warning(f"API-Sports daily limit reached (100 requests/day). " f"Resets at {reset_time} UTC")
+            logger.warning(
+                f"API-Sports daily limit reached (100 requests/day). " f"Resets at {reset_time} UTC"
+            )
             return []
 
         # Map sport name to API-Sports sport
@@ -220,11 +224,17 @@ class APISportsProvider(OddsAPIProvider):
             elif response.status_code == 401:
                 # Invalid API key
                 logger.error("API-Sports API key invalid")
-                self.update_health(success=False, response_time=response_time, error="Invalid API key")
+                self.update_health(
+                    success=False, response_time=response_time, error="Invalid API key"
+                )
                 return []
             else:
-                logger.error(f"API-Sports request failed: {response.status_code} - {response.text[:200]}")
-                self.update_health(success=False, response_time=response_time, error=f"HTTP {response.status_code}")
+                logger.error(
+                    f"API-Sports request failed: {response.status_code} - {response.text[:200]}"
+                )
+                self.update_health(
+                    success=False, response_time=response_time, error=f"HTTP {response.status_code}"
+                )
                 return []
 
         except Exception as e:
@@ -253,9 +263,7 @@ class APISportsProvider(OddsAPIProvider):
                 teams = fixture.get("teams", {})
                 bookmakers = fixture.get("bookmakers", [])
 
-                event_name = (
-                    f"{teams.get('home', {}).get('name', 'Team A')} vs {teams.get('away', {}).get('name', 'Team B')}"
-                )
+                event_name = f"{teams.get('home', {}).get('name', 'Team A')} vs {teams.get('away', {}).get('name', 'Team B')}"
 
                 # Extract outcomes from bookmakers
                 outcomes = []

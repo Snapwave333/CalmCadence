@@ -89,10 +89,14 @@ class TheSportsDBProvider(MetadataProvider):
                     try:
                         date_str = event_data.get("dateEvent", "")
                         time_str = event_data.get("strTime", "00:00:00")
-                        start_time = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
+                        start_time = datetime.strptime(
+                            f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S"
+                        )
 
                         # Only include upcoming matches
-                        if start_time > datetime.now() and start_time <= datetime.now() + timedelta(days=days_ahead):
+                        if start_time > datetime.now() and start_time <= datetime.now() + timedelta(
+                            days=days_ahead
+                        ):
                             matches.append(
                                 MatchMetadata(
                                     match_id=event_data.get("idEvent", ""),

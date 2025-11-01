@@ -241,7 +241,9 @@ class SofaScoreScraperProvider(OddsAPIProvider):
                     if event_id:
                         odds_data = self._fetch_event_odds(event_id)
                         if odds_data:
-                            normalized = self.normalize_response({"event": event_data, "odds": odds_data})
+                            normalized = self.normalize_response(
+                                {"event": event_data, "odds": odds_data}
+                            )
                             if normalized:
                                 normalized_events.extend(normalized)
                         # Small delay between event requests

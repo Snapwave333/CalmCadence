@@ -130,7 +130,9 @@ class AccountManagerDialog(QDialog):
                 self.accounts_table.setItem(row, 3, stealth_item)
 
                 # Total bets
-                self.accounts_table.setItem(row, 4, QTableWidgetItem(str(account.total_bets_placed)))
+                self.accounts_table.setItem(
+                    row, 4, QTableWidgetItem(str(account.total_bets_placed))
+                )
 
                 # Arb percentage
                 if account.total_bets_placed > 0:
@@ -151,7 +153,9 @@ class AccountManagerDialog(QDialog):
                 # Last bet
                 if account.last_bet_date:
                     date_str = (
-                        account.last_bet_date.split("T")[0] if "T" in account.last_bet_date else account.last_bet_date
+                        account.last_bet_date.split("T")[0]
+                        if "T" in account.last_bet_date
+                        else account.last_bet_date
                     )
                     self.accounts_table.setItem(row, 7, QTableWidgetItem(date_str))
                 else:

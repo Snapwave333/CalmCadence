@@ -1,78 +1,118 @@
-"""Unit tests for Sportradar provider."""
+"""Unit tests for Sportradar API provider."""
 
-# Skip if provider not implemented
-import pytest
-
-try:
-    from src.api_providers.sportradar import SportradarAPIProvider
-    SPORTRADAR_AVAILABLE = True
-except ImportError:
-    SPORTRADAR_AVAILABLE = False
-    SportradarAPIProvider = None
+from src.api_providers.sportradar import SportradarAPIProvider
 
 
-@pytest.mark.skipif(not SPORTRADAR_AVAILABLE, reason="Sportradar provider not implemented")
-class TestSportradarProvider:
+class TestSportradarAPIProvider:
     """Unit tests for SportradarAPIProvider."""
-    
+
     def test_init(self):
         """Test provider initialization."""
         provider = SportradarAPIProvider(api_key="test_key", enabled=True, priority=1)
         assert provider.api_key == "test_key"
         assert provider.enabled is True
         assert provider.priority == 1
-    
+        assert provider.get_provider_name() == "sportradar"
+
     def test_get_provider_name(self):
         """Test provider name."""
         provider = SportradarAPIProvider(api_key="test")
-        assert "sportradar" in provider.get_provider_name().lower()
-    
-    def test_normalize_response_happy_path(self):
-        """Test normalizing valid API response."""
+        assert provider.get_provider_name() == "sportradar"
+
+    def test_normalize_response_events_key(self):
+        """Test normalize_response with 'events' key structure."""
         provider = SportradarAPIProvider(api_key="test")
 
-        raw_response = {
-            "schedules": [
+        raw_data = {
+            "events": [
                 {
-                    "sport_event": {
-                        "sport_event_context": {"sport": {"name": "Soccer"}},
-                        "competitors": [
-                            {"name": "Team A", "qualifier": "home"},
-                            {"name": "Team B", "qualifier": "away"},
-                        ],
-                        "start_time": "2024-01-01T12:00:00Z",
-                    },
-                    "sport_event_status": {"status": "closed"},
+                    "sport": {"name": "Soccer"},
+                    "competitors": [
+                        {"name": "Team A"},
+                        {"name": "Team B"},
+                    ],
+                    "scheduled": "2024-01-01T12:00:00Z",
                     "markets": [
                         {
-                            "name": "Match Winner",
-                            "outcomes": [{"name": "Team A", "odds": "2.0"}, {"name": "Team B", "odds": "2.5"}],
+                            "bookmaker": {"name": "Bookmaker A"},
+                            "market_type": "h2h",
+                            "outcomes": [
+                                {"name": "Team A", "odds": 2.1},
+                                {"name": "Team B", "odds": 2.2},
+                            ],
                         }
                     ],
                 }
             ]
         }
 
-        result = provider.normalize_response(raw_response)
-        assert isinstance(result, list)
+        events = provider.normalize_response(raw_data)
 
-        # Should return list of events
-        if result:
-            assert isinstance(result[0], dict)
+        assert isinstance(events, list)
+        assert len(events) == 1
+        event = events[0]
+        assert event["sport"] == "Soccer"
+        assert event["home_team"] == "Team A"
+        assert event["away_team"] == "Team B"
+
+    def test_normalize_response_sport_events_key(self):
+        """Test normalize_response with 'sport_events' key structure."""
+        provider = SportradarAPIProvider(api_key="test")
+
+        raw_data = {
+            "sport_events": [
+                {
+                    "sport": {"name": "Basketball"},
+                    "competitors": [
+                        {"name": "Team C"},
+                        {"name": "Team D"},
+                    ],
+                    "markets": [
+                        {
+                            "bookmaker_name": "Bookmaker B",
+                            "type": "h2h",
+                            "outcomes": [
+                                {"name": "Team C", "price": 1.9},
+                            ],
+                        }
+                    ],
+                }
+            ]
+        }
+
+        events = provider.normalize_response(raw_data)
+        assert isinstance(events, list)
+        assert len(events) == 1
 
     def test_normalize_response_empty(self):
-        """Test normalizing empty response."""
+        """Test normalize_response with empty data."""
         provider = SportradarAPIProvider(api_key="test")
-        result = provider.normalize_response({})
-        assert isinstance(result, list)
-        result = provider.normalize_response({"schedules": []})
-        assert isinstance(result, list)
-    
-    def test_normalize_response_error_path(self):
-        """Test normalizing invalid response."""
+        events = provider.normalize_response({})
+        assert isinstance(events, list)
+
+    def test_normalize_response_list_format(self):
+        """Test normalize_response with direct list format."""
         provider = SportradarAPIProvider(api_key="test")
 
-        # Invalid data types
-        assert isinstance(provider.normalize_response(None), list)
-        assert isinstance(provider.normalize_response([]), list)
-        assert isinstance(provider.normalize_response("invalid"), list)
+        raw_data = [
+            {
+                "sport": {"name": "Tennis"},
+                "competitors": [{"name": "Player A"}, {"name": "Player B"}],
+            }
+        ]
+
+        events = provider.normalize_response(raw_data)
+        assert isinstance(events, list)
+
+    def test_fetch_odds_disabled(self):
+        """Test fetch_odds when provider is disabled."""
+        provider = SportradarAPIProvider(api_key="test", enabled=False)
+        result = provider.fetch_odds("soccer")
+        assert result == []
+
+    def test_get_available_sports(self):
+        """Test get_available_sports returns list."""
+        provider = SportradarAPIProvider(api_key="test")
+        sports = provider.get_available_sports()
+        assert isinstance(sports, list)
+        assert len(sports) > 0

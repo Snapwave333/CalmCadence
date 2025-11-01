@@ -71,7 +71,9 @@ class SetupWizard(QDialog):
         legacy_layout = QVBoxLayout()
 
         legacy_layout.addWidget(QLabel("The Odds API Key:"))
-        legacy_layout.addWidget(QLabel("Get your API key from:\n" "• The Odds API: https://the-odds-api.com/"))
+        legacy_layout.addWidget(
+            QLabel("Get your API key from:\n" "• The Odds API: https://the-odds-api.com/")
+        )
 
         self.api_key_input = QLineEdit()
         self.api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
@@ -128,13 +130,17 @@ class SetupWizard(QDialog):
 
         quick_us_btn = QPushButton("US Bookmakers")
         quick_us_btn.clicked.connect(
-            lambda: self.quick_add_bookmakers(["DraftKings", "FanDuel", "BetMGM", "Caesars", "PointsBet"])
+            lambda: self.quick_add_bookmakers(
+                ["DraftKings", "FanDuel", "BetMGM", "Caesars", "PointsBet"]
+            )
         )
         quick_layout.addWidget(quick_us_btn)
 
         quick_uk_btn = QPushButton("UK Bookmakers")
         quick_uk_btn.clicked.connect(
-            lambda: self.quick_add_bookmakers(["Bet365", "William Hill", "Paddy Power", "Betfair", "Sky Bet"])
+            lambda: self.quick_add_bookmakers(
+                ["Bet365", "William Hill", "Paddy Power", "Betfair", "Sky Bet"]
+            )
         )
         quick_layout.addWidget(quick_uk_btn)
 
@@ -254,7 +260,9 @@ class SetupWizard(QDialog):
             # Create new account
             from src.account_manager import AccountProfile
 
-            profile = AccountProfile(bookmaker_name=name, account_username=username or f"{name}_account")
+            profile = AccountProfile(
+                bookmaker_name=name, account_username=username or f"{name}_account"
+            )
             db.create_account(profile)
             created += 1
 
@@ -290,7 +298,8 @@ class SetupWizard(QDialog):
                 QMessageBox.warning(
                     self,
                     "API Key Test",
-                    "API key test completed, but no sports were returned.\n" "The key may be invalid or rate-limited.",
+                    "API key test completed, but no sports were returned.\n"
+                    "The key may be invalid or rate-limited.",
                 )
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to test API key:\n{str(e)}")

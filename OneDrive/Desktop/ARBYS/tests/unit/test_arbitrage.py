@@ -31,8 +31,12 @@ class TestArbitrageDetector:
         """Test implied probability calculation with decimal odds."""
         detector = ArbitrageDetector()
         assert math.isclose(detector.calculate_implied_probability(2.0, "decimal"), 0.5)
-        assert math.isclose(detector.calculate_implied_probability(1.5, "decimal"), 2 / 3, rel_tol=1e-5)
-        assert math.isclose(detector.calculate_implied_probability(3.0, "decimal"), 1 / 3, rel_tol=1e-5)
+        assert math.isclose(
+            detector.calculate_implied_probability(1.5, "decimal"), 2 / 3, rel_tol=1e-5
+        )
+        assert math.isclose(
+            detector.calculate_implied_probability(3.0, "decimal"), 1 / 3, rel_tol=1e-5
+        )
 
     def test_calculate_implied_probability_fractional(self):
         """Test implied probability with fractional odds."""
@@ -51,7 +55,9 @@ class TestArbitrageDetector:
         # +100 = 2.0 decimal = 0.5 probability
         assert math.isclose(detector.calculate_implied_probability(100, "american"), 0.5)
         # -200 = 1.5 decimal = 2/3 probability
-        assert math.isclose(detector.calculate_implied_probability(-200, "american"), 2 / 3, rel_tol=1e-5)
+        assert math.isclose(
+            detector.calculate_implied_probability(-200, "american"), 2 / 3, rel_tol=1e-5
+        )
 
     def test_normalize_odds_to_decimal(self):
         """Test odds normalization to decimal format."""
@@ -69,9 +75,24 @@ class TestArbitrageDetector:
         # For arbitrage, we need: 1/2.5 + 1/5.0 + 1/2.5 = 0.4 + 0.2 + 0.4 = 1.0 (exactly fair, still no arbitrage)
         # Actual arbitrage: 1/2.6 + 1/5.5 + 1/2.6 = 0.385 + 0.182 + 0.385 = 0.952 < 1.0 (YES arbitrage!)
         outcomes = [
-            {"outcome_name": "Home", "odds": 2.6, "bookmaker": "Bookmaker A", "odds_format": "decimal"},
-            {"outcome_name": "Draw", "odds": 5.5, "bookmaker": "Bookmaker B", "odds_format": "decimal"},
-            {"outcome_name": "Away", "odds": 2.6, "bookmaker": "Bookmaker C", "odds_format": "decimal"},
+            {
+                "outcome_name": "Home",
+                "odds": 2.6,
+                "bookmaker": "Bookmaker A",
+                "odds_format": "decimal",
+            },
+            {
+                "outcome_name": "Draw",
+                "odds": 5.5,
+                "bookmaker": "Bookmaker B",
+                "odds_format": "decimal",
+            },
+            {
+                "outcome_name": "Away",
+                "odds": 2.6,
+                "bookmaker": "Bookmaker C",
+                "odds_format": "decimal",
+            },
         ]
 
         arb = detector.detect_arbitrage(outcomes)
@@ -124,9 +145,13 @@ class TestArbitrageDetector:
         arb = detector.detect_arbitrage(outcomes)
         assert arb is None  # Should be filtered out
 
-    def test_detect_arbitrage_with_risk_evaluation(self, account_health_manager, sample_account_profile):
+    def test_detect_arbitrage_with_risk_evaluation(
+        self, account_health_manager, sample_account_profile
+    ):
         """Test risk evaluation with account health manager."""
-        detector = ArbitrageDetector(min_profit_percentage=0.1, account_health_manager=account_health_manager)
+        detector = ArbitrageDetector(
+            min_profit_percentage=0.1, account_health_manager=account_health_manager
+        )
 
         outcomes = [
             {

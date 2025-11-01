@@ -77,7 +77,9 @@ class AccountHealthManager:
             "stealth_score": profile.stealth_score,  # Now returns 0.0-1.0 scale
             "total_bets": profile.total_bets_placed,
             "arb_percentage": (
-                (profile.total_arb_bets / profile.total_bets_placed * 100) if profile.total_bets_placed > 0 else 0
+                (profile.total_arb_bets / profile.total_bets_placed * 100)
+                if profile.total_bets_placed > 0
+                else 0
             ),
             "total_profit_loss": profile.total_profit_loss,
             "recommended_stake_multiplier": multiplier,
@@ -110,7 +112,11 @@ class AccountHealthManager:
             multiplier = min(multiplier, 0.7)
 
         # Increase stake if account is healthy and has good mix
-        if profile.account_status == "Healthy" and profile.stealth_score >= 0.8 and profile.total_bets_placed > 0:
+        if (
+            profile.account_status == "Healthy"
+            and profile.stealth_score >= 0.8
+            and profile.total_bets_placed > 0
+        ):
             arb_percentage = (profile.total_arb_bets / profile.total_bets_placed) * 100
             if 30 <= arb_percentage <= 60:  # Good mix of arb and non-arb bets
                 multiplier = min(multiplier * 1.2, 1.5)  # Can bet more aggressively

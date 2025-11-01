@@ -1,5 +1,6 @@
 """GUI smoke tests for dialogs."""
 
+import contextlib
 import sys
 
 import pytest
@@ -21,11 +22,9 @@ def test_account_dialog_creation(qtbot, qapp):
     dialog = AccountDialog(parent=None)
     # QDialog is a QWidget, so we can add it
     if hasattr(qtbot, "addWidget"):
-        try:
-            qtbot.addWidget(dialog)
-        except TypeError:
+        with contextlib.suppress(TypeError):
             # Some pytest-qt versions require QWidget explicitly
-            pass
+            qtbot.addWidget(dialog)
 
     assert dialog is not None
     assert dialog.isWidgetType()
@@ -43,10 +42,8 @@ def test_setup_wizard_creation(qtbot, qapp):
 
     wizard = SetupWizard(parent=None)
     if hasattr(qtbot, "addWidget"):
-        try:
+        with contextlib.suppress(TypeError):
             qtbot.addWidget(wizard)
-        except TypeError:
-            pass
 
     assert wizard is not None
     assert wizard.isWidgetType()
@@ -59,10 +56,8 @@ def test_api_provider_dialog_creation(qtbot, qapp):
 
     dialog = APIProviderDialog(parent=None)
     if hasattr(qtbot, "addWidget"):
-        try:
+        with contextlib.suppress(TypeError):
             qtbot.addWidget(dialog)
-        except TypeError:
-            pass
 
     assert dialog is not None
     assert dialog.isWidgetType()

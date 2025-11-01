@@ -19,7 +19,9 @@ class TestThreadSafety:
         """Test concurrent access to cache."""
         # Create account
         db = AccountDatabase(db_path=temp_db)
-        profile = AccountProfile(bookmaker_name="ConcurrentTest", account_username="test", stealth_score=0.8)
+        profile = AccountProfile(
+            bookmaker_name="ConcurrentTest", account_username="test", stealth_score=0.8
+        )
         db.create_account(profile)
 
         # Create manager with cache
@@ -60,7 +62,9 @@ class TestThreadSafety:
     def test_cache_thread_safety(self, temp_db):
         """Test cache thread safety directly."""
         db = AccountDatabase(db_path=temp_db)
-        profile = AccountProfile(bookmaker_name="CacheTest", account_username="test", stealth_score=0.75)
+        profile = AccountProfile(
+            bookmaker_name="CacheTest", account_username="test", stealth_score=0.75
+        )
         db.create_account(profile)
 
         manager = AccountHealthManager(db_path=temp_db, enable_cache=True)

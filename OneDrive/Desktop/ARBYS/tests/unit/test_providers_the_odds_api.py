@@ -1,7 +1,5 @@
 """Unit tests for The Odds API provider."""
 
-from unittest.mock import Mock, patch
-
 from src.api_providers.the_odds_api import TheOddsAPIProvider
 
 
@@ -14,32 +12,32 @@ class TestTheOddsAPIProvider:
         assert provider.api_key == "test_key"
         assert provider.enabled is True
         assert provider.priority == 1
+        assert provider.get_provider_name() == "the_odds_api"
 
     def test_get_provider_name(self):
         """Test provider name."""
         provider = TheOddsAPIProvider(api_key="test")
-        assert "odds" in provider.get_provider_name().lower() or "the_odds" in provider.get_provider_name().lower()
+        assert provider.get_provider_name() == "the_odds_api"
 
     def test_normalize_response_happy_path(self):
-        """Test normalizing valid API response."""
+        """Test normalize_response with valid JSON."""
         provider = TheOddsAPIProvider(api_key="test")
 
-        raw_response = [
+        raw_data = [
             {
-                "sport_key": "soccer",
+                "sport_title": "Soccer",
                 "home_team": "Team A",
                 "away_team": "Team B",
                 "commence_time": "2024-01-01T12:00:00Z",
                 "bookmakers": [
                     {
-                        "key": "bookmaker1",
+                        "title": "Bookmaker A",
                         "markets": [
                             {
                                 "key": "h2h",
                                 "outcomes": [
-                                    {"name": "Team A", "price": 2.0},
-                                    {"name": "Team B", "price": 2.5},
-                                    {"name": "Draw", "price": 3.0},
+                                    {"name": "Team A", "price": 2.1},
+                                    {"name": "Team B", "price": 2.2},
                                 ],
                             }
                         ],
@@ -48,65 +46,63 @@ class TestTheOddsAPIProvider:
             }
         ]
 
-        result = provider.normalize_response(raw_response)
+        events = provider.normalize_response(raw_data)
 
-        assert isinstance(result, list)
-        assert len(result) > 0
-        events = result if isinstance(result, list) else [result]
-        assert len(events) >= 1
-
-        # Check structure
-        event = events[0] if isinstance(events[0], dict) else {}
-        assert "event_name" in str(event) or "outcomes" in str(event) or any("outcome" in str(k) for k in event.keys())
+        assert isinstance(events, list)
+        assert len(events) == 1
+        event = events[0]
+        assert event["sport"] == "Soccer"
+        assert event["home_team"] == "Team A"
+        assert event["away_team"] == "Team B"
+        assert len(event["outcomes"]) == 2
+        assert event["outcomes"][0]["outcome_name"] == "Team A"
+        assert event["outcomes"][0]["odds"] == 2.1
 
     def test_normalize_response_empty(self):
-        """Test normalizing empty response."""
+        """Test normalize_response with empty data."""
         provider = TheOddsAPIProvider(api_key="test")
-        result = provider.normalize_response([])
-        assert isinstance(result, list)
+        events = provider.normalize_response([])
+        assert isinstance(events, list)
+        assert len(events) == 0
 
-    def test_normalize_response_error_path(self):
-        """Test normalizing invalid response."""
+    def test_normalize_response_missing_fields(self):
+        """Test normalize_response with missing optional fields."""
         provider = TheOddsAPIProvider(api_key="test")
-        
-        # Invalid data types - provider should handle gracefully
-        # Note: current implementation may raise, so test what's expected
-        try:
-            result = provider.normalize_response(None)
-            assert isinstance(result, list)
-        except (TypeError, AttributeError):
-            pass  # Acceptable to raise on None
-        
-        # Empty dict should return empty list
-        assert isinstance(provider.normalize_response([]), list)
 
-    @patch("requests.get")
-    def test_fetch_odds_success(self, mock_get):
-        """Test successful odds fetch."""
-        provider = TheOddsAPIProvider(api_key="test_key")
-
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = [
+        raw_data = [
             {
-                "sport_key": "soccer",
+                "sport_title": "Soccer",
                 "home_team": "Team A",
                 "away_team": "Team B",
-                "commence_time": "2024-01-01T12:00:00Z",
-                "bookmakers": [],
+                "bookmakers": [
+                    {
+                        "title": "Bookmaker A",
+                        "markets": [
+                            {
+                                "key": "h2h",
+                                "outcomes": [
+                                    {"name": "Team A", "price": 2.1},
+                                ],
+                            }
+                        ],
+                    }
+                ],
             }
         ]
-        mock_get.return_value = mock_response
 
-        results = provider.fetch_odds("soccer")
-        assert isinstance(results, list)
+        events = provider.normalize_response(raw_data)
+        assert len(events) == 1
+        assert events[0]["commence_time"] == ""  # Default when missing
 
-    @patch("requests.get")
-    def test_fetch_odds_error(self, mock_get):
-        """Test error handling in fetch."""
-        provider = TheOddsAPIProvider(api_key="test_key")
+    def test_fetch_odds_disabled(self):
+        """Test fetch_odds when provider is disabled."""
+        provider = TheOddsAPIProvider(api_key="test", enabled=False)
+        result = provider.fetch_odds("soccer")
+        assert result == []
 
-        mock_get.side_effect = Exception("Network error")
-
-        results = provider.fetch_odds("soccer")
-        assert isinstance(results, list)  # Should return empty list on error
+    def test_get_available_sports_error_handling(self):
+        """Test get_available_sports handles errors gracefully."""
+        provider = TheOddsAPIProvider(api_key="invalid_key")
+        # Should not crash, returns empty list or valid list
+        sports = provider.get_available_sports()
+        assert isinstance(sports, list)

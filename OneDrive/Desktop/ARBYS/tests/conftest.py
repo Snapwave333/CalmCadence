@@ -12,6 +12,13 @@ from hypothesis import Verbosity, settings
 # Set test environment variables before any imports
 os.environ.setdefault("TEST_MODE", "1")
 os.environ.setdefault("ODDS_API_KEY", "TEST_KEY")
+os.environ.setdefault("ARBYS_SUPPRESS_WIZARD", "1")
+
+# Set QTWEBENGINE flags for test stability
+os.environ.setdefault("QTWEBENGINE_CHROMIUM_FLAGS", "--single-process --disable-gpu")
+
+# Note: WebEngine tests will be skipped individually if module missing
+# Don't skip entire test suite just because WebEngine is unavailable
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -69,7 +76,10 @@ def account_db(temp_db):
 def sample_account_profile(account_db):
     """Create sample account profile for testing."""
     profile = AccountProfile(
-        bookmaker_name="TestBookmaker", account_username="test_account", stealth_score=0.9, account_status="Healthy"
+        bookmaker_name="TestBookmaker",
+        account_username="test_account",
+        stealth_score=0.9,
+        account_status="Healthy",
     )
     account_id = account_db.create_account(profile)
     profile.id = account_id
@@ -124,13 +134,17 @@ def sample_odds_data():
 @pytest.fixture
 def arbitrage_detector(account_health_manager):
     """Create ArbitrageDetector instance."""
-    return ArbitrageDetector(min_profit_percentage=1.0, account_health_manager=account_health_manager)
+    return ArbitrageDetector(
+        min_profit_percentage=1.0, account_health_manager=account_health_manager
+    )
 
 
 @pytest.fixture
 def optimized_detector(account_health_manager):
     """Create OptimizedArbitrageDetector instance."""
-    return OptimizedArbitrageDetector(min_profit_percentage=1.0, account_health_manager=account_health_manager)
+    return OptimizedArbitrageDetector(
+        min_profit_percentage=1.0, account_health_manager=account_health_manager
+    )
 
 
 @pytest.fixture
@@ -163,7 +177,9 @@ def real_providers():
         from src.api_providers.the_odds_api import TheOddsAPIProvider
 
         try:
-            provider = TheOddsAPIProvider(api_key=os.getenv("ODDS_API_KEY"), enabled=True, priority=2)
+            provider = TheOddsAPIProvider(
+                api_key=os.getenv("ODDS_API_KEY"), enabled=True, priority=2
+            )
             providers.append(provider)
         except Exception:
             pass

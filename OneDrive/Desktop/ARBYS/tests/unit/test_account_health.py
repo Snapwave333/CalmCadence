@@ -31,14 +31,18 @@ class TestAccountHealthManager:
 
     def test_get_account_health_existing(self, account_health_manager, sample_account_profile):
         """Test getting health for existing account."""
-        health = account_health_manager.get_account_health(sample_account_profile.bookmaker_name, use_cache=False)
+        health = account_health_manager.get_account_health(
+            sample_account_profile.bookmaker_name, use_cache=False
+        )
 
         assert health["exists"] is True
         assert health["status"] == sample_account_profile.account_status
         assert "stealth_score" in health
         assert 0.0 <= health["stealth_score"] <= 1.0
 
-    def test_adjust_stake_for_account_health_healthy(self, account_health_manager, sample_account_profile):
+    def test_adjust_stake_for_account_health_healthy(
+        self, account_health_manager, sample_account_profile
+    ):
         """Test stake adjustment for healthy account."""
         original_stake = 100.0
         adjusted = account_health_manager.adjust_stake_for_account_health(
@@ -49,7 +53,9 @@ class TestAccountHealthManager:
         assert adjusted > 0
         assert adjusted <= original_stake * 1.5  # Shouldn't increase too much
 
-    def test_adjust_stake_for_account_health_low_stealth(self, account_health_manager, low_stealth_account_profile):
+    def test_adjust_stake_for_account_health_low_stealth(
+        self, account_health_manager, low_stealth_account_profile
+    ):
         """Test stake adjustment for low stealth account."""
         original_stake = 100.0
         adjusted = account_health_manager.adjust_stake_for_account_health(
@@ -80,19 +86,25 @@ class TestAccountHealthManager:
 
     def test_calculate_stake_multiplier(self, account_health_manager, sample_account_profile):
         """Test stake multiplier calculation."""
-        health = account_health_manager.get_account_health(sample_account_profile.bookmaker_name, use_cache=False)
+        health = account_health_manager.get_account_health(
+            sample_account_profile.bookmaker_name, use_cache=False
+        )
 
         multiplier = health.get("recommended_stake_multiplier", 1.0)
         assert 0.0 <= multiplier <= 2.0  # Reasonable range
 
     def test_assess_risk_level(self, account_health_manager, sample_account_profile):
         """Test risk level assessment."""
-        health = account_health_manager.get_account_health(sample_account_profile.bookmaker_name, use_cache=False)
+        health = account_health_manager.get_account_health(
+            sample_account_profile.bookmaker_name, use_cache=False
+        )
 
         risk_level = health.get("risk_level", "Unknown")
         assert risk_level in ["Low", "Medium", "High"]
 
-    def test_get_all_accounts_health(self, account_health_manager, sample_account_profile, low_stealth_account_profile):
+    def test_get_all_accounts_health(
+        self, account_health_manager, sample_account_profile, low_stealth_account_profile
+    ):
         """Test getting health for all accounts."""
         all_health = account_health_manager.get_all_accounts_health(use_cache=False)
 
@@ -108,9 +120,15 @@ class TestAccountHealthManager:
     def test_stealth_score_buckets(self, account_health_manager, account_db):
         """Test stealth score buckets map to correct multipliers."""
         # Create accounts with different stealth scores
-        high_stealth = AccountProfile(bookmaker_name="HighStealth", stealth_score=0.9, account_status="Healthy")
-        mid_stealth = AccountProfile(bookmaker_name="MidStealth", stealth_score=0.5, account_status="Healthy")
-        low_stealth = AccountProfile(bookmaker_name="LowStealth", stealth_score=0.2, account_status="Under Review")
+        high_stealth = AccountProfile(
+            bookmaker_name="HighStealth", stealth_score=0.9, account_status="Healthy"
+        )
+        mid_stealth = AccountProfile(
+            bookmaker_name="MidStealth", stealth_score=0.5, account_status="Healthy"
+        )
+        low_stealth = AccountProfile(
+            bookmaker_name="LowStealth", stealth_score=0.2, account_status="Under Review"
+        )
 
         account_db.create_account(high_stealth)
         account_db.create_account(mid_stealth)
@@ -122,10 +140,16 @@ class TestAccountHealthManager:
         low_health = account_health_manager.get_account_health("LowStealth", use_cache=False)
 
         # High stealth should have higher multiplier
-        assert high_health.get("recommended_stake_multiplier", 0) >= mid_health.get("recommended_stake_multiplier", 0)
-        assert mid_health.get("recommended_stake_multiplier", 0) >= low_health.get("recommended_stake_multiplier", 0)
+        assert high_health.get("recommended_stake_multiplier", 0) >= mid_health.get(
+            "recommended_stake_multiplier", 0
+        )
+        assert mid_health.get("recommended_stake_multiplier", 0) >= low_health.get(
+            "recommended_stake_multiplier", 0
+        )
 
-    def test_update_account_after_bet_balance_mutation(self, account_health_manager, sample_account_profile):
+    def test_update_account_after_bet_balance_mutation(
+        self, account_health_manager, sample_account_profile
+    ):
         """Test that update_account_after_bet mutates balance correctly."""
         # Get initial profile
         profile = account_health_manager.db.get_account(sample_account_profile.bookmaker_name)
@@ -138,7 +162,9 @@ class TestAccountHealthManager:
         )
 
         # Check balance increased
-        updated_profile = account_health_manager.db.get_account(sample_account_profile.bookmaker_name)
+        updated_profile = account_health_manager.db.get_account(
+            sample_account_profile.bookmaker_name
+        )
         assert updated_profile.total_profit_loss == initial_balance + 10.0
         assert updated_profile.total_bets_placed == initial_bets + 1
         assert updated_profile.total_arb_bets == (profile.total_arb_bets if profile else 0) + 1
@@ -151,4 +177,7 @@ class TestAccountHealthManager:
 
         final_profile = account_health_manager.db.get_account(sample_account_profile.bookmaker_name)
         assert final_profile.total_profit_loss == new_balance - 5.0
-        assert final_profile.total_non_arb_bets == (updated_profile.total_non_arb_bets if updated_profile else 0) + 1
+        assert (
+            final_profile.total_non_arb_bets
+            == (updated_profile.total_non_arb_bets if updated_profile else 0) + 1
+        )

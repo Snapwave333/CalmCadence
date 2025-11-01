@@ -71,7 +71,10 @@ app.quit()
 """
 
         result = subprocess.run(
-            [sys.executable, "-c", script], capture_output=True, text=True, cwd=Path(__file__).parent.parent.parent
+            [sys.executable, "-c", script],
+            capture_output=True,
+            text=True,
+            cwd=Path(__file__).parent.parent.parent,
         )
 
         # Extract timing from output

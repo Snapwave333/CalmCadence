@@ -74,10 +74,12 @@ class TestMultiAPIOrchestrator:
     def test_merge_provider_results(self):
         """Test merging results from multiple providers."""
         provider1 = MockProvider(
-            "Provider1", data=[{"event_name": "Event 1", "outcomes": [{"name": "Home", "odds": 2.0}]}]
+            "Provider1",
+            data=[{"event_name": "Event 1", "outcomes": [{"name": "Home", "odds": 2.0}]}],
         )
         provider2 = MockProvider(
-            "Provider2", data=[{"event_name": "Event 1", "outcomes": [{"name": "Away", "odds": 2.1}]}]
+            "Provider2",
+            data=[{"event_name": "Event 1", "outcomes": [{"name": "Away", "odds": 2.1}]}],
         )
         orchestrator = MultiAPIOrchestrator([provider1, provider2])
 
@@ -133,7 +135,8 @@ class TestMultiAPIOrchestrator:
     def test_one_missing_provider(self):
         """Test merge when one provider returns empty results."""
         provider1 = MockProvider(
-            "Provider1", data=[{"event_name": "Event 1", "outcomes": [{"name": "Home", "odds": 2.0}]}]
+            "Provider1",
+            data=[{"event_name": "Event 1", "outcomes": [{"name": "Home", "odds": 2.0}]}],
         )
         provider2 = MockProvider("Provider2", data=[])  # Empty results
         orchestrator = MultiAPIOrchestrator([provider1, provider2])
@@ -161,10 +164,12 @@ class TestMultiAPIOrchestrator:
         """Test merging when providers return conflicting event data."""
         # Same event, different odds
         provider1 = MockProvider(
-            "Provider1", data=[{"event_name": "Event 1", "outcomes": [{"name": "Home", "odds": 2.0}]}]
+            "Provider1",
+            data=[{"event_name": "Event 1", "outcomes": [{"name": "Home", "odds": 2.0}]}],
         )
         provider2 = MockProvider(
-            "Provider2", data=[{"event_name": "Event 1", "outcomes": [{"name": "Home", "odds": 2.1}]}]
+            "Provider2",
+            data=[{"event_name": "Event 1", "outcomes": [{"name": "Home", "odds": 2.1}]}],
         )
         orchestrator = MultiAPIOrchestrator([provider1, provider2])
 

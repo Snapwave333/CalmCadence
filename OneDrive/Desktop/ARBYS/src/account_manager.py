@@ -160,10 +160,14 @@ class AccountDatabase:
         conn.commit()
         conn.close()
 
-        logger.info(f"Created account profile: {profile.bookmaker_name} - {profile.account_username}")
+        logger.info(
+            f"Created account profile: {profile.bookmaker_name} - {profile.account_username}"
+        )
         return account_id
 
-    def get_account(self, bookmaker_name: str, account_username: str = None) -> AccountProfile | None:
+    def get_account(
+        self, bookmaker_name: str, account_username: str = None
+    ) -> AccountProfile | None:
         """
         Get account profile by bookmaker name.
 
@@ -183,7 +187,9 @@ class AccountDatabase:
                 (bookmaker_name, account_username),
             )
         else:
-            cursor.execute("SELECT * FROM accounts WHERE bookmaker_name = ? LIMIT 1", (bookmaker_name,))
+            cursor.execute(
+                "SELECT * FROM accounts WHERE bookmaker_name = ? LIMIT 1", (bookmaker_name,)
+            )
 
         row = cursor.fetchone()
         conn.close()
@@ -503,7 +509,9 @@ class AccountDatabase:
                 from dateutil import parser
 
                 last_arb = parser.parse(profile.last_arb_date)
-                hours_since_arb = (datetime.now() - last_arb.replace(tzinfo=None)).total_seconds() / 3600
+                hours_since_arb = (
+                    datetime.now() - last_arb.replace(tzinfo=None)
+                ).total_seconds() / 3600
 
                 if hours_since_arb < 1:
                     score -= 0.10  # Very recent arb bet

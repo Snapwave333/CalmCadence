@@ -79,7 +79,9 @@ class StakeCalculator:
 
             # Apply account health adjustment if available
             if self.account_health_manager:
-                stake = self.account_health_manager.adjust_stake_for_account_health(outcome["bookmaker"], stake)
+                stake = self.account_health_manager.adjust_stake_for_account_health(
+                    outcome["bookmaker"], stake
+                )
 
             # Get stealth score for dynamic rounding (use cache if available)
             stealth_score = 1.0
@@ -175,7 +177,9 @@ class StakeCalculator:
             rounding_unit = 0.10 if stake > 50 else 0.05
             return round(stake / rounding_unit) * rounding_unit
 
-    def vary_stakes(self, stake_distribution: StakeDistribution, variation_percent: float = None) -> StakeDistribution:
+    def vary_stakes(
+        self, stake_distribution: StakeDistribution, variation_percent: float = None
+    ) -> StakeDistribution:
         """
         Add slight variation to stakes for anti-detection.
 

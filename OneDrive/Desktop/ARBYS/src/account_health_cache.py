@@ -54,7 +54,9 @@ class AccountHealthCache:
                     return health_data
 
             # Cache miss or expired - fetch from database (bypass cache to avoid recursion)
-            health_data = self.account_health_manager.get_account_health(bookmaker_name, use_cache=False)
+            health_data = self.account_health_manager.get_account_health(
+                bookmaker_name, use_cache=False
+            )
 
             # Store in cache
             self._cache[bookmaker_name] = (health_data, now)

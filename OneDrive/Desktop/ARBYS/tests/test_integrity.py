@@ -11,7 +11,9 @@ from src.account_health import AccountHealthManager
 class TestArbitrageDetectionIntegrity:
     """Test that optimized detector produces identical results."""
 
-    def test_vectorized_detection_identical_results(self, arbitrage_detector, optimized_detector, sample_odds_data):
+    def test_vectorized_detection_identical_results(
+        self, arbitrage_detector, optimized_detector, sample_odds_data
+    ):
         """Verify vectorized detection produces identical results."""
         # Original detector
         original_result = arbitrage_detector.detect_arbitrage(sample_odds_data)
@@ -30,7 +32,13 @@ class TestArbitrageDetectionIntegrity:
         assert original_result.event_name == optimized_result.event_name
         assert original_result.market == optimized_result.market
         assert abs(original_result.profit_percentage - optimized_result.profit_percentage) < 0.001
-        assert abs(original_result.total_implied_probability - optimized_result.total_implied_probability) < 0.0001
+        assert (
+            abs(
+                original_result.total_implied_probability
+                - optimized_result.total_implied_probability
+            )
+            < 0.0001
+        )
 
         # Compare outcomes
         assert len(original_result.outcomes) == len(optimized_result.outcomes)
@@ -44,9 +52,14 @@ class TestArbitrageDetectionIntegrity:
             assert abs(orig["odds"] - opt["odds"]) < 0.0001
             assert orig["bookmaker"] == opt["bookmaker"]
 
-    def test_batch_processing_consistency(self, arbitrage_detector, optimized_detector, sample_odds_data):
+    def test_batch_processing_consistency(
+        self, arbitrage_detector, optimized_detector, sample_odds_data
+    ):
         """Verify batch processing produces consistent results."""
-        events_data = [{"outcomes": sample_odds_data}, {"outcomes": sample_odds_data}]  # Same data twice
+        events_data = [
+            {"outcomes": sample_odds_data},
+            {"outcomes": sample_odds_data},
+        ]  # Same data twice
 
         # Original batch processing
         original_results = arbitrage_detector.find_best_arbitrages(events_data)
@@ -102,7 +115,9 @@ class TestStealthScoreIntegrity:
                     stake_info["stake"] < total_stake * 0.5
                 ), f"Stake should be reduced for low stealth account, got {stake_info['stake']}"
 
-    def test_high_stealth_score_full_stake(self, account_health_manager, sample_account_profile, stake_calculator):
+    def test_high_stealth_score_full_stake(
+        self, account_health_manager, sample_account_profile, stake_calculator
+    ):
         """Verify high stealth score allows full stake."""
         bookmaker_name = sample_account_profile.bookmaker_name
 
@@ -152,7 +167,10 @@ class TestCacheIntegrity:
         # Compare key fields
         assert uncached_result["stealth_score"] == cached_result["stealth_score"]
         assert uncached_result["status"] == cached_result["status"]
-        assert uncached_result["recommended_stake_multiplier"] == cached_result["recommended_stake_multiplier"]
+        assert (
+            uncached_result["recommended_stake_multiplier"]
+            == cached_result["recommended_stake_multiplier"]
+        )
 
     def test_cache_invalidation_on_update(self, account_health_manager, sample_account_profile):
         """Verify cache invalidates when data changes."""

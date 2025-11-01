@@ -88,7 +88,9 @@ class TestIOLatency:
 class TestArbitrageDetectionPerformance:
     """Test arbitrage detection performance."""
 
-    def test_vectorized_detection_speed(self, arbitrage_detector, optimized_detector, sample_odds_data):
+    def test_vectorized_detection_speed(
+        self, arbitrage_detector, optimized_detector, sample_odds_data
+    ):
         """Benchmark vectorized detection speed."""
         import time
 
@@ -146,7 +148,9 @@ class TestArbitrageDetectionPerformance:
         elapsed = time.perf_counter() - start
 
         # Should process 1000 outcomes in reasonable time (< 100ms)
-        assert elapsed < 0.1, f"Large dataset processing took {elapsed*1000:.1f}ms, expected < 100ms"
+        assert (
+            elapsed < 0.1
+        ), f"Large dataset processing took {elapsed*1000:.1f}ms, expected < 100ms"
 
         print("\nLarge Dataset Performance:")
         print("  Dataset size: 1000 outcomes")

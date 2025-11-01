@@ -74,7 +74,9 @@ class EnhancedMultiAPIOrchestrator(MultiAPIOrchestrator):
             mashup_analysis = {
                 "model_used": self.probability_model.__class__.__name__,
                 "events_analyzed": len(analyzed_results),
-                "value_opportunities": sum(1 for event in analyzed_results if event.get("value_discrepancies")),
+                "value_opportunities": sum(
+                    1 for event in analyzed_results if event.get("value_discrepancies")
+                ),
             }
 
         # Check for injury/lineup signals
@@ -119,7 +121,9 @@ class EnhancedMultiAPIOrchestrator(MultiAPIOrchestrator):
             if match_id:
                 lineup_signal = self.injury_detector.get_lineup_change_signals(match_id=match_id)
                 if lineup_signal.get("has_changes"):
-                    signals["lineup_changes"].append({"event": event.get("event_name", ""), "signal": lineup_signal})
+                    signals["lineup_changes"].append(
+                        {"event": event.get("event_name", ""), "signal": lineup_signal}
+                    )
 
         # Identify affected events
         affected = []

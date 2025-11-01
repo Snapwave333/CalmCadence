@@ -21,7 +21,9 @@ class OptimizedArbitrageDetector(ArbitrageDetector):
     - Batch processing for multiple events
     """
 
-    def detect_arbitrage_vectorized(self, outcomes_data: list[dict[str, any]]) -> ArbitrageOpportunity | None:
+    def detect_arbitrage_vectorized(
+        self, outcomes_data: list[dict[str, any]]
+    ) -> ArbitrageOpportunity | None:
         """
         Vectorized arbitrage detection for improved performance.
 
@@ -139,7 +141,9 @@ class OptimizedArbitrageDetector(ArbitrageDetector):
         )
 
     # TODO(redline): public API method - batch processing for multiple events
-    def find_best_arbitrages_batch(self, events_data: list[dict[str, any]]) -> list[ArbitrageOpportunity]:
+    def find_best_arbitrages_batch(
+        self, events_data: list[dict[str, any]]
+    ) -> list[ArbitrageOpportunity]:
         """
         Batch-process multiple events for improved performance.
 

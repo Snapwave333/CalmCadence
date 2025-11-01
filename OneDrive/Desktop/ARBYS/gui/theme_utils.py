@@ -40,7 +40,9 @@ def load_theme_stylesheet(project_root: str = None) -> str:
         svg_path = os.path.join(project_root, "looks", "assets", "carbon_fiber_tile.svg")
         if os.path.exists(svg_path):
             svg_path = svg_path.replace("\\", "/")
-            stylesheet = stylesheet.replace("url(../assets/carbon_fiber_tile.svg)", f"url({svg_path})")
+            stylesheet = stylesheet.replace(
+                "url(../assets/carbon_fiber_tile.svg)", f"url({svg_path})"
+            )
 
         logger.info("Theme loaded successfully")
         return stylesheet

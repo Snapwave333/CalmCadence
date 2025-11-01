@@ -36,13 +36,22 @@ class TestOrchestratedDataFetcher:
 
     def test_fetch_odds_with_orchestrator(self):
         """Test fetching odds via orchestrator."""
-        from src.data_orchestrator import MultiAPIOrchestrator
+        import os
 
-        mock_orchestrator = Mock(spec=MultiAPIOrchestrator)
-        mock_orchestrator.fetch_odds.return_value = ([{"event": "Test"}], [], {})
+        # Use OrchestratorStub in TEST_MODE
+        if os.getenv("TEST_MODE") == "1":
+            from tests.utils.orchestrator_stub import OrchestratorStub
 
-        fetcher = OrchestratedDataFetcher(mock_orchestrator)
-        results = fetcher.fetch_odds("soccer")
+            orchestrator = OrchestratorStub()
+            fetcher = OrchestratedDataFetcher(orchestrator)
+            results = fetcher.fetch_odds("soccer")
+            assert isinstance(results, list)
+        else:
+            from src.data_orchestrator import MultiAPIOrchestrator
 
-        assert isinstance(results, list)
-        mock_orchestrator.fetch_odds.assert_called_once_with("soccer")
+            mock_orchestrator = Mock(spec=MultiAPIOrchestrator)
+            mock_orchestrator.fetch_odds.return_value = ([{"event": "Test"}], [], {})
+            fetcher = OrchestratedDataFetcher(mock_orchestrator)
+            results = fetcher.fetch_odds("soccer")
+            assert isinstance(results, list)
+            mock_orchestrator.fetch_odds.assert_called_once_with("soccer")

@@ -51,7 +51,9 @@ class OddsAPIProvider(ABC):
         self.api_key = api_key
         self.enabled = enabled
         self.priority = priority
-        self.health = ProviderHealth(provider_name=self.get_provider_name(), enabled=enabled, priority=priority)
+        self.health = ProviderHealth(
+            provider_name=self.get_provider_name(), enabled=enabled, priority=priority
+        )
 
     @abstractmethod
     def get_provider_name(self) -> str:
