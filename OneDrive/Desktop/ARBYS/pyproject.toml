@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arbys"
-version = "1.0.0"
-description = "Arbitrage Betting Bot with PyQt6 GUI"
+version = "1.1.3"
+description = "Sports Arbitrage Betting Bot with PyQt6 GUI"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -122,8 +122,8 @@ exclude = ["venv", "\\.venv", "\\.direnv", "tests", "\\.git", "setup\\.py", "nox
 # DEP003: Imported but marked as transitive dependency (false positives)
 # - PyQt6 submodules: correctly in requirements.txt but flagged
 # - Import name mismatches: dotenv (python-dotenv), dateutil (python-dateutil), bs4 (beautifulsoup4)
+# - Live arbitrage dependencies: uc (undetected-chromedriver), nash (nashpy)
 # - Core dependencies correctly declared in requirements.txt
-DEP003 = ["PyQt6", "PyQt6.QtCore", "PyQt6.QtWidgets", "PyQt6.QtGui", "requests", "numpy", "aiohttp", "dotenv", "dateutil", "bs4"]
+DEP003 = ["PyQt6", "PyQt6.QtCore", "PyQt6.QtWidgets", "PyQt6.QtGui", "requests", "numpy", "aiohttp", "dotenv", "dateutil", "bs4", "uc", "nash"]
 # DEP001: Imported but missing from dependency definitions (nox is in requirements.txt but not recognized)
 DEP001 = ["nox"]
-
