@@ -29,6 +29,11 @@ public class DevConsole : MonoBehaviour
     public GameObject listEntryPrefab;
     public Button toggleButton;
 
+    [Header("Settings")]
+    public KeyCode toggleKey = KeyCode.BackQuote;
+    public int maxOutputLines = 256;
+    public int maxListEntries = 100;
+
     private readonly Dictionary<string, object> _choiceFlags = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
     private class RegisteredCommand
@@ -41,6 +46,15 @@ public class DevConsole : MonoBehaviour
 
     private readonly Dictionary<string, RegisteredCommand> _commands = new Dictionary<string, RegisteredCommand>(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> _outputLines = new List<string>(128);
+
+    // Cache for static commands to avoid repeated reflection
+    private static Dictionary<string, RegisteredCommand> _staticCommandsCache;
+    private static bool _staticCommandsCached = false;
+
+    // Object pooling for list entries
+    private readonly Queue<GameObject> _entryPool = new Queue<GameObject>();
+    private readonly List<GameObject> _activeFlagEntries = new List<GameObject>();
+    private readonly List<GameObject> _activeCommandEntries = new List<GameObject>();
 
     private void Awake()
     {
@@ -64,7 +78,7 @@ public class DevConsole : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.BackQuote))
+        if (Input.GetKeyDown(toggleKey))
         {
             ToggleOverlay();
         }
@@ -172,6 +186,10 @@ public class DevConsole : MonoBehaviour
                 PrintLine(s);
             }
         }
+        catch (TargetInvocationException ex)
+        {
+            PrintLine($"Error: {ex.InnerException?.Message ?? ex.Message}");
+        }
         catch (Exception ex)
         {
             PrintLine($"Error: {ex.Message}");
@@ -213,7 +231,12 @@ public class DevConsole : MonoBehaviour
     private void PrintLine(string line)
     {
         _outputLines.Add(line);
-        if (_outputLines.Count > 256) _outputLines.RemoveAt(0);
+        if (_outputLines.Count > maxOutputLines)
+        {
+            var removed = _outputLines.Count - maxOutputLines;
+            _outputLines.RemoveRange(0, removed);
+            Debug.LogWarning($"DevConsole: Output buffer exceeded {maxOutputLines} lines, oldest {removed} lines dropped");
+        }
     }
 
     private void RefreshOutput()
@@ -244,17 +267,52 @@ public class DevConsole : MonoBehaviour
     private void RefreshFlagsList()
     {
         if (flagsListContent == null) return;
-        foreach (Transform child in flagsListContent) Destroy(child.gameObject);
+
+        // Return active entries to pool
+        foreach (var entry in _activeFlagEntries)
+        {
+            if (entry != null)
+            {
+                entry.SetActive(false);
+                _entryPool.Enqueue(entry);
+            }
+        }
+        _activeFlagEntries.Clear();
+
+        int count = 0;
         foreach (var kv in _choiceFlags.OrderBy(k => k.Key))
         {
-            var go = CreateListEntry(flagsListContent, kv.Key + ": " + (kv.Value == null ? "<null>" : kv.Value.ToString()));
+            if (count >= maxListEntries)
+            {
+                var overflow = GetOrCreateEntry(flagsListContent);
+                overflow.GetComponentInChildren<Text>().text = $"... and {_choiceFlags.Count - count} more";
+                _activeFlagEntries.Add(overflow);
+                break;
+            }
+
+            var go = GetOrCreateEntry(flagsListContent);
+            var txt = go.GetComponentInChildren<Text>();
+            if (txt != null) txt.text = kv.Key + ": " + (kv.Value == null ? "<null>" : kv.Value.ToString());
+            _activeFlagEntries.Add(go);
+            count++;
         }
     }
 
     private void RefreshCommandList()
     {
         if (commandListContent == null) return;
-        foreach (Transform child in commandListContent) Destroy(child.gameObject);
+
+        // Return active entries to pool
+        foreach (var entry in _activeCommandEntries)
+        {
+            if (entry != null)
+            {
+                entry.SetActive(false);
+                _entryPool.Enqueue(entry);
+            }
+        }
+        _activeCommandEntries.Clear();
+
         string filter = commandFilterInput != null ? commandFilterInput.text : string.Empty;
         IEnumerable<RegisteredCommand> items = _commands.Values;
         if (!string.IsNullOrWhiteSpace(filter))
@@ -262,10 +320,37 @@ public class DevConsole : MonoBehaviour
             items = items.Where(c => c.name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0 ||
                                      (!string.IsNullOrEmpty(c.description) && c.description.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0));
         }
+
+        int count = 0;
         foreach (var c in items.OrderBy(c => c.name))
         {
-            CreateListEntry(commandListContent, c.name + " — " + c.description);
+            if (count >= maxListEntries)
+            {
+                var overflow = GetOrCreateEntry(commandListContent);
+                overflow.GetComponentInChildren<Text>().text = $"... and more (use filter)";
+                _activeCommandEntries.Add(overflow);
+                break;
+            }
+
+            var go = GetOrCreateEntry(commandListContent);
+            var txt = go.GetComponentInChildren<Text>();
+            if (txt != null) txt.text = c.name + " — " + c.description;
+            _activeCommandEntries.Add(go);
+            count++;
         }
+    }
+
+    private GameObject GetOrCreateEntry(Transform parent)
+    {
+        if (_entryPool.Count > 0)
+        {
+            var pooled = _entryPool.Dequeue();
+            pooled.transform.SetParent(parent, false);
+            pooled.SetActive(true);
+            return pooled;
+        }
+
+        return CreateListEntry(parent, "");
     }
 
     private GameObject CreateListEntry(Transform parent, string text)
@@ -431,31 +516,76 @@ public class DevConsole : MonoBehaviour
     private void BuildRegistry()
     {
         _commands.Clear();
-        // Scan loaded scene objects and static methods
+
+        // Scan loaded scene objects for instance methods
         foreach (var mb in FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
         {
             RegisterCommandsOn(mb);
         }
-        // Also scan static methods on assemblies (optionally restrict to project assembly)
+
+        // Use cached static commands to avoid repeated expensive reflection
+        if (!_staticCommandsCached)
+        {
+            _staticCommandsCache = new Dictionary<string, RegisteredCommand>(StringComparer.OrdinalIgnoreCase);
+            ScanStaticCommands();
+            _staticCommandsCached = true;
+        }
+
+        // Add cached static commands
+        foreach (var kvp in _staticCommandsCache)
+        {
+            if (!_commands.ContainsKey(kvp.Key))
+            {
+                _commands[kvp.Key] = kvp.Value;
+            }
+        }
+    }
+
+    private void ScanStaticCommands()
+    {
+        // Whitelist only project assemblies for security
+        var allowedAssemblyPrefixes = new[] { "Assembly-CSharp", "Assembly-CSharp-firstpass" };
+
         foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
         {
-            if (asm.FullName.StartsWith("Unity")) continue;
-            foreach (var type in asm.GetTypes())
+            // Skip Unity and System assemblies
+            var asmName = asm.GetName().Name;
+            if (!allowedAssemblyPrefixes.Any(prefix => asmName.StartsWith(prefix)))
             {
-                foreach (var mi in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
+                continue;
+            }
+
+            try
+            {
+                foreach (var type in asm.GetTypes())
                 {
-                    var attr = mi.GetCustomAttribute<DevCommandAttribute>();
-                    if (attr != null)
+                    // Skip compiler-generated and internal types
+                    if (type.IsNotPublic || type.IsNested || type.Name.StartsWith("<"))
                     {
-                        AddRegistryEntry(attr, mi, null);
+                        continue;
+                    }
+
+                    foreach (var mi in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
+                    {
+                        var attr = mi.GetCustomAttribute<DevCommandAttribute>();
+                        if (attr != null)
+                        {
+                            AddStaticRegistryEntry(attr, mi);
+                        }
                     }
                 }
+            }
+            catch (ReflectionTypeLoadException ex)
+            {
+                Debug.LogWarning($"DevConsole: Failed to load some types from {asmName}: {ex.Message}");
             }
         }
     }
 
     private void RegisterCommandsOn(MonoBehaviour target)
     {
+        if (target == null) return;
+
         var type = target.GetType();
         foreach (var mi in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
         {
@@ -474,9 +604,22 @@ public class DevConsole : MonoBehaviour
         _commands[attr.Name] = new RegisteredCommand
         {
             name = attr.Name,
-            description = attr.Description,
+            description = attr.Description ?? "",
             method = mi,
             target = target
+        };
+    }
+
+    private void AddStaticRegistryEntry(DevCommandAttribute attr, MethodInfo mi)
+    {
+        if (string.IsNullOrWhiteSpace(attr.Name)) return;
+        if (_staticCommandsCache.ContainsKey(attr.Name)) return;
+        _staticCommandsCache[attr.Name] = new RegisteredCommand
+        {
+            name = attr.Name,
+            description = attr.Description ?? "",
+            method = mi,
+            target = null
         };
     }
 
@@ -522,6 +665,13 @@ public class DevConsole : MonoBehaviour
             return "teleported to (" + x + "," + y + "," + z + ")";
         });
 
+        RegisterLocal("clear", "clear — clears console output", args =>
+        {
+            _outputLines.Clear();
+            RefreshOutput();
+            return "";
+        });
+
         RegisterLocal("shownav", "shownav — toggle NavMesh visualization (Editor)", args =>
         {
 #if UNITY_EDITOR
@@ -564,5 +714,3 @@ public class DevConsole : MonoBehaviour
         _commands[name] = local;
     }
 }
-
-

@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using UnityEditor;
 using UnityEngine;
@@ -11,12 +12,14 @@ public class AssetGeneratorWindow : EditorWindow
 
     private string pythonPath = "python";
     private string nodePath = "node";
+    private int timeoutMs = 60000; // 60 second timeout
 
     private void OnGUI()
     {
         EditorGUILayout.LabelField("External tooling paths", EditorStyles.boldLabel);
         pythonPath = EditorGUILayout.TextField("Python", pythonPath);
         nodePath = EditorGUILayout.TextField("Node", nodePath);
+        timeoutMs = EditorGUILayout.IntField("Timeout (ms)", timeoutMs);
         EditorGUILayout.Space();
 
         if (GUILayout.Button("Generate Textures (Python)"))
@@ -43,6 +46,7 @@ public class AssetGeneratorWindow : EditorWindow
 
     private void RunProcess(string executable, string script)
     {
+        Process process = null;
         try
         {
             var psi = new ProcessStartInfo
@@ -55,19 +59,55 @@ public class AssetGeneratorWindow : EditorWindow
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
-            var p = Process.Start(psi);
-            string stdout = p.StandardOutput.ReadToEnd();
-            string stderr = p.StandardError.ReadToEnd();
-            p.WaitForExit();
-            UnityEngine.Debug.Log($"{script} exited {p.ExitCode}\n{stdout}");
-            if (!string.IsNullOrEmpty(stderr)) UnityEngine.Debug.LogWarning(stderr);
+
+            process = Process.Start(psi);
+            if (process == null)
+            {
+                EditorUtility.DisplayDialog("Asset Generator", $"Failed to start process: {executable}", "OK");
+                return;
+            }
+
+            string stdout = process.StandardOutput.ReadToEnd();
+            string stderr = process.StandardError.ReadToEnd();
+
+            bool exited = process.WaitForExit(timeoutMs);
+            if (!exited)
+            {
+                process.Kill();
+                EditorUtility.DisplayDialog("Asset Generator", $"Process timed out after {timeoutMs}ms: {script}", "OK");
+                return;
+            }
+
+            int exitCode = process.ExitCode;
+            UnityEngine.Debug.Log($"{script} exited {exitCode}\n{stdout}");
+
+            if (!string.IsNullOrEmpty(stderr))
+            {
+                UnityEngine.Debug.LogWarning($"{script} stderr:\n{stderr}");
+            }
+
+            if (exitCode != 0)
+            {
+                EditorUtility.DisplayDialog("Asset Generator", $"{script} failed with exit code {exitCode}.\nCheck console for details.", "OK");
+            }
+
             AssetDatabase.Refresh();
         }
-        catch (System.Exception ex)
+        catch (System.ComponentModel.Win32Exception ex)
         {
-            EditorUtility.DisplayDialog("Asset Generator", "Failed: " + ex.Message + "\nEnsure required tools are installed.", "OK");
+            EditorUtility.DisplayDialog("Asset Generator", $"Failed to run '{executable}':\n{ex.Message}\n\nEnsure the executable is installed and in PATH.", "OK");
+        }
+        catch (InvalidOperationException ex)
+        {
+            EditorUtility.DisplayDialog("Asset Generator", $"Process error: {ex.Message}", "OK");
+        }
+        catch (Exception ex)
+        {
+            EditorUtility.DisplayDialog("Asset Generator", $"Unexpected error: {ex.GetType().Name}\n{ex.Message}", "OK");
+        }
+        finally
+        {
+            process?.Dispose();
         }
     }
 }
-
-
